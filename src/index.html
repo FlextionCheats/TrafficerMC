@@ -286,19 +286,36 @@
                     <label class="label-text">Control Move</label>
                   </span>
                 </div>
-                <div class="input-group flex-colum">
-                  <select id="controlValue" class="select">
-                    <option value="forward">Forward</option>
-                    <option value="back">Backwards</option>
-                    <option value="left">Left</option>
-                    <option value="right">Right</option>
-                    <option value="jump">Jump</option>
-                    <option value="sneak">Sneak</option>
-                  </select>
-                </div>
-                <div class="input-group mu-4">
-                  <button id="startControl" class="button">Start</button>
-                  <button id="stopControl" class="button">Stop</button>
+                <div>
+                  <div class="border">
+                    <div class="input-group flex-colum">
+                      <select id="controlValue" class="select">
+                        <option value="forward">Forward</option>
+                        <option value="back">Backwards</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                        <option value="jump">Jump</option>
+                        <option value="sneak">Sneak</option>
+                      </select>
+                    </div>
+                    <div class="input-group mu-4">
+                      <button id="startControl" class="button">Start</button>
+                      <button id="stopControl" class="button">Stop</button>
+                    </div>
+                  </div>
+                  <div class="border">
+                    <div class="flex">
+                      <div class="input-group flex-colum ">
+                        <input id="followingPlayer" class="input" placeholder="following player">
+                      </div>
+                    </div>
+                    <div class="flex">
+                      <div class="input-group mu-4">
+                        <button id="startFollowing" class="button">Start</button>
+                        <button id="stopFollowing" class="button">Stop</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
