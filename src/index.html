@@ -19,9 +19,11 @@
         <ul class="flex-colum flex tab-selectors" style="border: none; opacity: 1;">
         <button class="button tab active" onclick="openTab('general')">General</button>
         <button id="btnBotting" class="button tab" onclick="openTab('botting')">Botting</button>
+        <button class="button tab" onclick="openTab('cheats')">Cheats</button>
         <button class="button tab" onclick="openTab('scripting')">Scripting</button>
         <button class="button tab" onclick="openTab('proxyTab')">Proxy</button>
         <button class="button tab" onclick="openTab('settings')">Settings</button>
+        <button class="button tab" onclick="openTab('captchaBypass')">Captcha Bypass</button>
         <button class="button tab" onclick="openTab('about')">About</button>
       </ul>
     </div>
@@ -138,6 +140,7 @@
             </div>
             <ul id="ul-options" class="flex-colum input-group selectors" style="height: 14pc; width:15pc; position: relative; top: -20px; opacity: 1;">
               <button class="button button-selected" data-target=".controls">Controls</button>
+              <button class="button" data-target=".view">ViewBot</button>
               <button class="button" data-target=".chat">Chat</button>
               <button class="button" data-target=".spam">Spam</button>
               <button class="button" data-target=".setHotbatSlot">Set hotbar slot</button>
@@ -146,7 +149,6 @@
               <button class="button" data-target=".look">Look</button>
               <button class="button" data-target=".drop">Drop</button>
               <button class="button" data-target=".antiafk">Anti-AFK</button>
-              <button class="button" data-target=".killaura">Killaura</button>
             </ul>
           </div>
           <div id="main-options" class="pl-4">
@@ -164,17 +166,25 @@
                   <button id="btnReconnect" class="button">Reconnect</button>
                   <button id="btnUseHeld" class="button">Use Held</button>
                   <button id="btnCloseWin" class="button">Close Window</button>
+                  <button id="btnStartFishing" class="button">Start Fishing</button>
+                  <button id="btnStopFishing" class="button">Stop Fishing</button>
                 </div>
               </div>
             </div>
             <div id="chat" class="chat functsBtn" style="display:none">
               <div class="input-group flex-colum center-elements">
+                <div class="flex">
+                  <div id="captchaOutput">
+                    <img id="captcha" src="">
+                  </div>
+                </div>
                 <span class="label">
                   <label class="label-text">Send message</label>
                 </span>
                 <div class="input-group flex-colum">
                   <input id="chatMessage" class="input" type="text" placeholder="Message">
                   <button id="btnChatMessage" class="button mu-4">Send</button>
+                  <button id="btnRegisterMessage" class="button mu-4">Register</button>
                 </div>
               </div>
             </div>
@@ -200,6 +210,30 @@
                 </div>
                 <div class="input-group flex-colum">
                   <input id="antiSpamLength" class="input" type="number" min="1" placeholder="Random letters (Default 5)">
+                </div>
+              </div>
+            </div>
+            <div id="viewbot" class="view functsBtn" style="display:none">
+              <div class="input-group center-elements flex-colum">
+                <span class="label">
+                  <label class="label-text">View Bot</label>
+                </span>
+                <div class="input-group flex-colum">
+                  <input id="portMessageBox" class="input" type="text" placeholder="Port(Default 8888)">
+                </div>
+                <div class="flex center-elements mu-4">
+                  <button id="startViewBot" class="button">Start</button>
+                  <button id="stopViewBot" class="button">Stop</button>
+                </div>
+                <span class="label">
+                  <label class="label-text">View Inventory</label>
+                </span>
+                <div class="input-group flex-colum">
+                  <input id="portInventoryMessageBox" class="input" type="text" placeholder="Port(Default 3000)">
+                </div>
+                <div class="flex center-elements mu-4">
+                  <button id="startViewInventory" class="button">Start</button>
+                  <button id="stopViewInventory" class="button">Stop</button>
                 </div>
               </div>
             </div>
@@ -301,60 +335,6 @@
                 <div class="input-group flex-colum">
                   <button id="startAfk" class="button">Start</button>
                   <button id="stopAfk" class="button">Stop</button>
-                </div>
-              </div>
-            </div>
-            <div id="killaura" class="killaura functsBtn" style="display: none">
-              <div class="input-group flex-colum center-elements">
-                <span class="label">
-                  <label class="label-text">Killaura</label>
-                </span>
-                <div class="input-group flex-colum">
-                  <label class="container">
-                    <label>Toggle killaura</label>
-                    <input id="toggleka" type="checkbox">
-                    <span class="checkmark"></span>
-                    <hr>
-                  </label>
-                  <span>Range</span>
-                  <input id="kaRange" type="range" min="1" max="6" value="1" class="slider">
-                  <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
-                    <label class="container">
-                      <label>Delay</label>
-                    </label>
-                    <input id="kaDelay" type="number" min="0" class="input-sm m-1" placeholder="(500ms)">
-                  </div>
-                  <div class="flex">
-                    <label class="container" style="margin-top: 10px;">
-                      <label>Look at target</label>
-                      <input id="toggleKaLook" type="checkbox">
-                      <span class="checkmark"></span>
-                    </label>
-                  </div>
-                  <div class="flex">
-                    <label class="container" style="margin-top: 10px;">
-                      <label>Player</label>
-                      <input id="kaTp" type="checkbox">
-                      <span class="checkmark"></span>
-                    </label>
-                    <label class="container" style="margin-top: 10px; margin-left: 10px;">
-                      <label>Vehicle</label>
-                      <input id="kaTv" type="checkbox">
-                      <span class="checkmark"></span>
-                    </label>
-                  </div>
-                  <div class="flex">
-                    <label class="container" style="margin-top: 10px;">
-                      <label>Mob</label>
-                      <input id="kaTm" type="checkbox">
-                      <span class="checkmark"></span>
-                    </label>
-                    <label class="container" style="margin-top: 10px; margin-left: 30px;">
-                      <label>Animal</label>
-                      <input id="kaTa" type="checkbox">
-                      <span class="checkmark"></span>
-                    </label>
-                  </div>
                 </div>
               </div>
             </div>
@@ -511,11 +491,6 @@
               <input id="checkboxSprint" type="checkbox">
               <span class="checkmark"></span>
             </label>
-            <label class="container">
-              <label>Ignore selected bots in Killaura</label>
-              <input id="checkKaIgnoreSelected" type="checkbox">
-              <span class="checkmark"></span>
-            </label>
           </div>
           <div class="border m-4" style="width: 275px;">
             <span class="label" style="position: relative; top:-25px">
@@ -538,6 +513,106 @@
           </label>
         </div>
       </div>
+
+      <div id="cheats" class="tab-pane m-4">
+        <div class="flex">
+          <div class="border">
+            <span class="label" style="position: relative; top:-27px">
+              <label class="label-text">KillAura</label>
+            </span>
+            <div class="flex">
+              <label class="container">
+                <label>Toggle killaura</label>
+                <input id="toggleka" type="checkbox">
+                <span class="checkmark"></span>
+                <hr>
+              </label>
+            </div>
+            <span>Range(1-6)</span>
+            <input id="kaRange" type="range" min="1" max="6" value="1" class="slider">
+            <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
+              <label class="container">
+                <label>Delay</label>
+              </label>
+              <input id="kaDelay" type="number" min="0" class="input-sm m-1" placeholder="(500ms)">
+            </div>
+            <div class="flex">
+              <label class="container" style="margin-top: 10px;">
+                <label>Look at target</label>
+                <input id="toggleKaLook" type="checkbox">
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="flex">
+              <label class="container">
+                <label>Ignore selected bots</label>
+                <input id="checkKaIgnoreSelected" type="checkbox">
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="border mu-4" style="width:370px;">
+              <span class="label" style="position: relative; top:-27px">
+                <label class="label-text">Targets</label>
+              </span>
+              <div class="flex">
+                <label class="container" style="margin-top: 10px;">
+                  <label>Player</label>
+                  <input id="kaTp" type="checkbox">
+                  <span class="checkmark"></span>
+                </label>
+                <label class="container" style="margin-top: 10px; margin-left: 10px;">
+                  <label>Vehicle</label>
+                  <input id="kaTv" type="checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="flex">
+                <label class="container" style="margin-top: 10px;">
+                  <label>Mob</label>
+                  <input id="kaTm" type="checkbox">
+                  <span class="checkmark"></span>
+                </label>
+                <label class="container" style="margin-top: 10px; margin-left: 30px;">
+                  <label>Animal</label>
+                  <input id="kaTa" type="checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="captchaBypass" class="tab-pane m-4">
+        <div class="flex">
+          <div class="border">
+            <span class="label" style="position: relative; top:-27px">
+              <label class="label-text">Captcha Bypass</label>
+            </span>
+            <div class="flex">
+              <label class="container">
+                <label>Toggle Captcha Bypass</label>
+                <input id="toggleCaptcha" type="checkbox">
+                <span class="checkmark"></span>
+                <hr>
+              </label>
+              <div class="flex">
+                <span class="label">
+                  <label class="label-text" id="botCaptcha">Bot: </label>
+                </span>
+              </div>
+            </div>
+            <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
+              <label class="container">
+                <label>Captcha</label>
+              </label>
+              <input id="captchaId" type="number" min="0" class="input-sm m-1" placeholder="Please write captcha">
+              <button id="sendcaptchaID" class="button">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="about" class="tab-pane" style="width: 800px;">
           <div class="flex center-elements">
             <img src="./assets/icons/icon.png" style="width: 50px;">

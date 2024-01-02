@@ -1,4 +1,5 @@
 const mineflayer = require('mineflayer');
+const mineflayerViewer = require('prismarine-viewer').mineflayer
 const { EventEmitter } = require('events')
 const socks = require('socks').SocksClient
 const ProxyAgent = require('proxy-agent')
@@ -464,5 +465,6 @@ module.exports = {
     checkAuth,
     createBot,
     scrapeProxy,
-    botApi
+    botApi,
+    mineflayerViewer
 }
