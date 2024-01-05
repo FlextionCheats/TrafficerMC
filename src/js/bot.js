@@ -4,15 +4,19 @@ const path = require('path');
 const { getColor, mineflayerViewer, connectBot, delay, salt, addPlayer, rmPlayer, errBot, botApi, sendLog, exeAll, checkVer, startScript, loadTheme, createPopup, formatText, selectedList, checkAuth, createBot, scrapeProxy } = require(path.join(__dirname, "js", "utils.js"));
 const { checkProxy } = require(path.join(__dirname, "js", "plugins", "proxy.js"))
 const antiafk = require(path.join(__dirname, "js", "plugins", "afk.js"))
+const captchaSolver = require(`${__dirname}/js/plugins/captchaSolver.js`);
 
 const inventoryViewer = require('mineflayer-web-inventory')
 const PNGImage = require('pngjs-image');
 const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 
 let currentTime
-let random;
 let targetPlayer = null;
-let followInterval;
+const radius = 3; 
+const captchaCheckState = new Map();
+
+const bots = [];
+let index = 0;
 
 // ids
 const idBotUsername = document.getElementById('botUsename')
@@ -75,7 +79,6 @@ const idCustomCssFile = document.getElementById('customCssFile')
 const idPopupUl = document.getElementById('listul')
 const idShowChatCheck = document.getElementById('showChatCheck')
 const idWindow = document.getElementById('botOpenWindow')
-const idWindowTitle = document.getElementById('botOpenWindowName')
 const idKarange = document.getElementById('kaRange')
 const idKadelay = document.getElementById('kaDelay')
 const idTplayer = document.getElementById('kaTp')
@@ -113,13 +116,14 @@ const idStopViewInventory = document.getElementById('stopViewInventory')
 const idStartFishing = document.getElementById('btnStartFishing')
 const idStopFishing = document.getElementById('btnStopFishing')
 const idCaptcha = document.getElementById('captcha')
-const idToggleCaptcha = document.getElementById('toggleCaptcha')
-const idCaptchaID = document.getElementById('captchaId')
-const idSendCaptchaID = document.getElementById('sendcaptchaID')
 const idRegisterMessage = document.getElementById("btnRegisterMessage")
 const idFollowingPlayer = document.getElementById("followingPlayer")
 const idStartFollowingPlayer = document.getElementById("startFollowing")
 const idStopFollowingPlayer = document.getElementById("stopFollowing")
+const idKeyCaptcha = document.getElementById('keyCaptchaGuru')
+const idCircleRadius = document.getElementById('circleRadius')
+const idStartCircle = document.getElementById('startCircle')
+const idStopCircle = document.getElementById('stopCircle')
 
 // button listeners
 
@@ -189,19 +193,20 @@ idAuthType.onchange = () => {checkAuth()}
 
 idStartViewBot.onclick = () => {exeAll('viewboton', idPortMessage.value)}
 idStopViewBot.onclick = () => {exeAll('viewbotoff')}
-idStartViewInventory.onclick = () => {exeAll('viewinventoryon', idPortInventoryMessage)}
+idStartViewInventory.onclick = () => {exeAll('viewinventoryon', idPortInventoryMessage.value)}
 idStopViewInventory.onclick = () => {exeAll('viewinventoryoff')}
 idStartFishing.onclick = () => {exeAll('fishingon')}
 idStopFishing.onclick = () => {exeAll('fishingoff')}
-idToggleCaptcha.onclick = () => {exeAll("togglecaptcha", idToggleCaptcha.checked)}
-idSendCaptchaID.onclick = () => {exeAll("sendCaptcha"), idCaptchaID.value}
 idRegisterMessage.onclick = () => {exeAll("sendRegister")}
-idStartFollowingPlayer.onclick = () => {exeAll("followingon", idFollowingPlayer.value)}
-idStopFollowingPlayer.onclick = () => {exeAll("followingoff")}
+idStartFollowingPlayer.onclick = () => {exeAll('followingon', idFollowingPlayer.value)}
+idStopFollowingPlayer.onclick = () => {exeAll('followingoff')}
+idStartCircle.onclick = () => {exeAll('circleon', idCircleRadius.value)}
+idStopCircle.onclick = () => {exeAll('circleoff')}
 
 async function newBot(options) {
     const bot = createBot(options)
     let afkLoaded = false
+    const movements = new Movements(bot);
 
     await bot.once('login', ()=> {
         botApi.emit("login", bot.username)
@@ -212,7 +217,6 @@ async function newBot(options) {
         botApi.on(bot.username+'chat', (o) => { 
             if(idCheckAntiSpam.checked) { 
                 bot.chat(o.toString().replaceAll("(SALT)", salt(4))+" "+salt(antiSpamLength.value ? antiSpamLength.value : 5))
-                fs.unlink(`${__dirname}/assets/captcha.png`+random, (err) => {})
             } else { 
                 bot.chat(o.toString().replaceAll("(SALT)", salt(4))) 
             } 
@@ -275,15 +279,9 @@ async function newBot(options) {
                     }
                 }
 
-                random = Math.random(1, 100)
-                image.writeImage(`${__dirname}/assets/captcha.png`+random);
-                document.getElementById("botCaptcha").innerText = "Bot: "+ bot.username
+                image.writeImage(`${__dirname}/assets/captcha_`+bot.username+'.png');
+                bots.push(bot);
             }
-        })
-        
-        botApi.on(bot.username+'sendCaptcha', (o) => {
-            bot.chat(o.toString().replaceAll("(SALT)", salt(4))+" "+salt(antiSpamLength.value ? antiSpamLength.value : 5))
-            fs.unlink(`${__dirname}/assets/captcha.png`+random, (err) => {});
         })
 
         botApi.on(bot.username+'sendRegister', (o) => {
@@ -314,7 +312,37 @@ async function newBot(options) {
                 sendLog(`Player ${player.username} left. Stopped following.`);
                 targetPlayer = null;
             }
-        });
+        })
+
+        botApi.on(bot.username+'circleon', (o) => {
+            const center = getAverageCoordinates();
+
+            const targetX = center.x + radius * Math.cos(bot.entity.yaw);
+            const targetZ = center.z + radius * Math.sin(bot.entity.yaw);
+
+            const goal = new goals.GoalFollow(null, { x: targetX, y: bot.entity.position.y, z: targetZ });
+            bot.pathfinder.setMovements(movements);
+            bot.pathfinder.setGoal(goal);
+        })
+
+        function getAverageCoordinates() {
+            let totalX = 0;
+            let totalZ = 0;
+        
+            bots.forEach((bot) => {
+                totalX += bot.entity.position.x;
+                totalZ += bot.entity.position.z;
+            });
+        
+            const centerX = totalX / bots.length;
+            const centerZ = totalZ / bots.length;
+        
+            return { x: centerX, z: centerZ };
+        }
+
+        botApi.on(bot.username+'circleoff', () => {
+
+        })
 
         botApi.on(bot.username+'drop', (o) => {
             const inventory = bot.inventory;
@@ -392,7 +420,10 @@ async function newBot(options) {
     
     bot.once('spawn', () => {
         botApi.emit("spawn", bot.username)
-        if(idJoinMessage) {bot.chat(idJoinMessage.value)}
+        if(idJoinMessage) {
+            bot.chat("/register " + idJoinMessage.value)
+            bot.chat("/login " + idJoinMessage.value)
+        }
         bot.loadPlugin(pathfinder);
     });
     
@@ -439,36 +470,42 @@ async function newBot(options) {
             const mcData = require('minecraft-data')(bot.version);
             const movements = new Movements(bot, mcData);
             bot.pathfinder.setMovements(movements);
-    
-            followInterval = setInterval(() => {
+
+            const goal = new goals.GoalFollow(targetPlayer.entity, { range: 1, speed: 0.97 });
+            bot.pathfinder.setGoal(goal, true);
+
+            bot.on('physicTick', () => {
                 if (!targetPlayer || !targetPlayer.entity) {
                     stopFollow();
                     return;
                 }
+
+                const distanceToPlayer = bot.entity.position.distanceTo(targetPlayer.entity.position);
+
+                if (distanceToPlayer > 5) {
+                    bot.setControlState('sprint', true);
+                } else {
+                    bot.setControlState('sprint', false);
+                }
     
-                // Установка параметров range и speed для ближнего следования
-                const goal = new goals.GoalFollow(targetPlayer.entity, { range: 1, speed: 0.97 });
-                bot.pathfinder.setGoal(goal, true);
-
                 bot.lookAt(targetPlayer.entity.position.offset(0, targetPlayer.entity.height, 0));
-
-                // Умное движение с автоматическим прыжком при обнаружении пропасти
-                const blockBelow = bot.blockAt(bot.entity.position.offset(0, -1, 0));
+    
                 const blockInFront = bot.blockAt(bot.entity.position.offset(0, 0, 1));
 
-                if (blockBelow && blockBelow.type === 0 && blockInFront && blockInFront.type !== 0) {
+                if (blockInFront && blockInFront.type !== 0) {
                     bot.setControlState('jump', true);
-                } else {
-                    bot.setControlState('jump', false);
+                    setTimeout(() => {
+                        bot.setControlState('jump', false);
+                    }, 250); 
                 }
-            }, 200);
+            });
         }
     }
-    
+
     function stopFollow() {
-        clearInterval(followInterval);
         bot.pathfinder.setGoal(null);
         bot.setControlState('jump', false);
+        bot.setControlState('sprint', false);
     }
 }
 
@@ -557,12 +594,43 @@ function saveData() {
         "botCount": document.getElementById('botCount').value,
         "joinDelay": document.getElementById('joinDelay').value,
         "joinMessage": document.getElementById('joinMessage').value,
-        'scriptPath': document.getElementById('scriptPath').value
+        "scriptPath": document.getElementById('scriptPath').value,
+        "key": document.getElementById('keyCaptchaGuru').value
     }))
 }
 
-function updateImage() {
-    idCaptcha.src = './assets/captcha.png'+random;
+async function captchaSolverValue() {
+    if (index < bots.length) {
+        const botCaptcha = bots[index];
+        captchaPath = `${__dirname}/assets/captcha_` + botCaptcha.username + '.png'
+
+        idCaptcha.src = './assets/captcha_' + bots[index].username + '.png';
+        document.getElementById("botCaptcha").innerText = "Bot: "+ botCaptcha.username
+        if (!captchaCheckState.has(botCaptcha.username) && botCaptcha.heldItem.name === 'filled_map') {
+            await captchaSolver.solveCaptcha(captchaPath).then(result => {
+                if (result) {
+                    document.getElementById('solveCaptcha').innerText = "Answer: " + result;
+                    botCaptcha.chat(result);
+                }
+            });
+            captchaCheckState.set(botCaptcha.username, true);
+        }
+
+        if(botCaptcha.heldItem.name != 'filled_map') {
+            fs.unlink(`${__dirname}/assets/captcha_` + bots[index].username + '.png', (err) => {});
+            captchaCheckState.delete(botCaptcha.username);
+            index++;
+        }
+
+        botCaptcha.on('end', () => {
+            fs.unlink(`${__dirname}/assets/captcha_` + bots[index].username + '.png', (err) => {});
+            captchaCheckState.delete(botCaptcha.username);
+            index++;
+        })
+    } else {
+        document.getElementById("botCaptcha").innerText = "Bot: "
+        idCaptcha.src = '';
+    }
 }
 
-setInterval(updateImage, 500)
+setInterval(captchaSolverValue, 650)

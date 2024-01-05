@@ -19,11 +19,9 @@
         <ul class="flex-colum flex tab-selectors" style="border: none; opacity: 1;">
         <button class="button tab active" onclick="openTab('general')">General</button>
         <button id="btnBotting" class="button tab" onclick="openTab('botting')">Botting</button>
-        <button class="button tab" onclick="openTab('cheats')">Cheats</button>
         <button class="button tab" onclick="openTab('scripting')">Scripting</button>
         <button class="button tab" onclick="openTab('proxyTab')">Proxy</button>
         <button class="button tab" onclick="openTab('settings')">Settings</button>
-        <button class="button tab" onclick="openTab('captchaBypass')">Captcha Bypass</button>
         <button class="button tab" onclick="openTab('about')">About</button>
       </ul>
     </div>
@@ -68,6 +66,7 @@
           <span class="label-text"> Version:</span>
           <select id="botversion" class="select-input">
             <option value="">Version Auto</option>
+            <option value="1.20.2">1.20.2</option>
             <option value="1.20.1">1.20.1</option>
             <option value="1.20">1.20</option>
             <option value="1.19.4">1.19.4</option>
@@ -125,6 +124,7 @@
           <button id="btnStop" class="button">Stop</button>
         </div>
       </div>
+
       <div id="botting" class="tab-pane">
         <div class="flex">
           <div class="pl-4">
@@ -140,6 +140,7 @@
             </div>
             <ul id="ul-options" class="flex-colum input-group selectors" style="height: 14pc; width:15pc; position: relative; top: -20px; opacity: 1;">
               <button class="button button-selected" data-target=".controls">Controls</button>
+              <button class="button" data-target=".captchaSolver">Captcha Solver</button>
               <button class="button" data-target=".view">ViewBot</button>
               <button class="button" data-target=".chat">Chat</button>
               <button class="button" data-target=".spam">Spam</button>
@@ -149,94 +150,102 @@
               <button class="button" data-target=".look">Look</button>
               <button class="button" data-target=".drop">Drop</button>
               <button class="button" data-target=".antiafk">Anti-AFK</button>
+              <button class="button" data-target=".killaura">KillAura</button>
             </ul>
           </div>
           <div id="main-options" class="pl-4">
-            <div id="windowName">
-              <span id="botOpenWindowName">Window</span>
-            </div>
-            <ul id="botOpenWindow" class="flex-colum" style="height: 11pc; width:15pc; margin: 0;"></ul>
             <div id="controls" class="controls functsBtn">
               <div class="input-group flex-colum center-elements">
                 <span class="label">
                   <label class="label-text">Main controls</label>
                 </span>
-                <div class="input-group flex-colum">
-                  <button id="btnDisconnect" class="button">Disconnect</button>
-                  <button id="btnReconnect" class="button">Reconnect</button>
-                  <button id="btnUseHeld" class="button">Use Held</button>
-                  <button id="btnCloseWin" class="button">Close Window</button>
-                  <button id="btnStartFishing" class="button">Start Fishing</button>
-                  <button id="btnStopFishing" class="button">Stop Fishing</button>
+                <div class="border">
+                  <div class="input-group flex-colum">
+                    <button id="btnDisconnect" class="button" style="width: 189px;">Disconnect</button>
+                    <button id="btnReconnect" class="button">Reconnect</button>
+                    <button id="btnUseHeld" class="button">Use Held</button>
+                    <button id="btnCloseWin" class="button">Close Window</button>
+                    <button id="btnStartFishing" class="button">Start Fishing</button>
+                    <button id="btnStopFishing" class="button">Stop Fishing</button>
+                  </div>
                 </div>
               </div>
             </div>
+
             <div id="chat" class="chat functsBtn" style="display:none">
               <div class="input-group flex-colum center-elements">
-                <div class="flex">
-                  <div id="captchaOutput">
-                    <img id="captcha" src="">
-                  </div>
-                </div>
                 <span class="label">
                   <label class="label-text">Send message</label>
                 </span>
-                <div class="input-group flex-colum">
-                  <input id="chatMessage" class="input" type="text" placeholder="Message">
-                  <button id="btnChatMessage" class="button mu-4">Send</button>
-                  <button id="btnRegisterMessage" class="button mu-4">Register</button>
+                <div class="border">
+                  <div class="input-group flex-colum">
+                    <input id="chatMessage" class="input" type="text" placeholder="Message">
+                    <button id="btnChatMessage" class="button mu-4">Send</button>
+                    <button id="btnRegisterMessage" class="button mu-4">Register</button>
+                  </div>
                 </div>
               </div>
             </div>
+
             <div id="spam" class="spam functsBtn" style="display:none">
               <div class="input-group center-elements flex-colum">
                 <span class="label">
                   <label class="label-text">Spam message</label>
                 </span>
-                <div class="input-group flex-colum">
-                  <input id="spamMessageBox" class="input" type="text" placeholder="Message">
-                  <input id="spamDelay" class="input" type="number" min="0" placeholder="Spam Delay 1000 (ms)">
-                </div>
-                <div class="flex center-elements mu-4">
-                  <button id="startSpam" class="button">Start</button>
-                  <button id="stopSpam" class="button">Stop</button>
-                </div>
-                <div class="flex mu-4">
-                  <label class="container">
-                    <label style="position: relative; top: -3px">Anti-spam</label>
-                    <input id="checkAntiSpam" type="checkbox">
-                    <span class="checkmark"></span>
-                  </label>
-                </div>
-                <div class="input-group flex-colum">
-                  <input id="antiSpamLength" class="input" type="number" min="1" placeholder="Random letters (Default 5)">
+                <div class="border">
+                  <div class="input-group flex-colum">
+                    <input id="spamMessageBox" class="input" type="text" placeholder="Message">
+                    <input id="spamDelay" class="input" type="number" min="0" placeholder="Spam Delay 1000 (ms)">
+                  </div>
+                  <div class="flex center-elements mu-4">
+                    <button id="startSpam" class="button">Start</button>
+                    <button id="stopSpam" class="button">Stop</button>
+                  </div>
+                  <div class="flex mu-4">
+                    <label class="container">
+                      <label style="position: relative; top: -3px">Anti-spam</label>
+                      <input id="checkAntiSpam" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                  <div class="input-group flex-colum">
+                    <input id="antiSpamLength" class="input" type="number" min="1" placeholder="Random letters (Default 5)">
+                  </div>
                 </div>
               </div>
             </div>
+
             <div id="viewbot" class="view functsBtn" style="display:none">
               <div class="input-group center-elements flex-colum">
                 <span class="label">
-                  <label class="label-text">View Bot</label>
+                  <label class="label-text">View bot</label>
                 </span>
-                <div class="input-group flex-colum">
-                  <input id="portMessageBox" class="input" type="text" placeholder="Port(Default 8888)">
-                </div>
-                <div class="flex center-elements mu-4">
-                  <button id="startViewBot" class="button">Start</button>
-                  <button id="stopViewBot" class="button">Stop</button>
+                <div class="border">
+                  <div class="flex">
+                    <div class="input-group flex-colum">
+                      <input id="portMessageBox" class="input" type="text" placeholder="Port(Default 8888)">
+                    </div>
+                  </div>
+                  <div class="flex center-elements mu-4">
+                    <button id="startViewBot" class="button">Start</button>
+                    <button id="stopViewBot" class="button">Stop</button>
+                  </div>
                 </div>
                 <span class="label">
-                  <label class="label-text">View Inventory</label>
+                  <label class="label-text">View inventory</label>
                 </span>
-                <div class="input-group flex-colum">
-                  <input id="portInventoryMessageBox" class="input" type="text" placeholder="Port(Default 3000)">
-                </div>
-                <div class="flex center-elements mu-4">
-                  <button id="startViewInventory" class="button">Start</button>
-                  <button id="stopViewInventory" class="button">Stop</button>
+                <div class="border">
+                  <div class="input-group flex-colum">
+                    <input id="portInventoryMessageBox" class="input" type="text" placeholder="Port(Default 3000)">
+                  </div>
+                  <div class="flex center-elements mu-4">
+                    <button id="startViewInventory" class="button">Start</button>
+                    <button id="stopViewInventory" class="button">Stop</button>
+                  </div>
                 </div>
               </div>
             </div>
+
             <div id="setHotbatSlot" class="setHotbatSlot functsBtn" style="display:none">
               <div class="input-group flex-colum">
                 <div class="center-elements">
@@ -244,48 +253,52 @@
                     <label class="label-text">Set hotbar slot</label>
                   </span>
                 </div>
-                <div class="input-group">
-                  <div class="input-group center-elements">
-                    <div class="flex">
-                      <select id="hotbarSlot" class="input">
-                        <option class="button" value="0">Slot 1</option>
-                        <option class="button" value="1">Slot 2</option>
-                        <option class="button" value="2">Slot 3</option>
-                        <option class="button" value="3">Slot 4</option>
-                        <option class="button" value="4">Slot 5</option>
-                        <option class="button" value="5">Slot 6</option>
-                        <option class="button" value="6">Slot 7</option>
-                        <option class="button" value="7">Slot 8</option>
-                        <option class="button" value="8">Slot 9</option>
-                      </select>
-                      <button id="btnSetHotbar" class="button">Set</button>
+                <div class="border">
+                  <div class="input-group">
+                    <div class="input-group center-elements">
+                      <div class="flex">
+                        <select id="hotbarSlot" class="input">
+                          <option class="button" value="0">Slot 1</option>
+                          <option class="button" value="1">Slot 2</option>
+                          <option class="button" value="2">Slot 3</option>
+                          <option class="button" value="3">Slot 4</option>
+                          <option class="button" value="4">Slot 5</option>
+                          <option class="button" value="5">Slot 6</option>
+                          <option class="button" value="6">Slot 7</option>
+                          <option class="button" value="7">Slot 8</option>
+                          <option class="button" value="8">Slot 9</option>
+                        </select>
+                        <button id="btnSetHotbar" class="button" style="width: 125px;">Set</button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
             <div id="clickWindow" class="clickWindow functsBtn" style="display:none">
-              <div class="center-elements">
+              <div class="input-group flex-colum center-elements">
                 <span class="label">
                   <label class="label-text">Click window slot</label>
                 </span>
               </div>
-              <div class="input-group flex-colum">
-                <input id="windowValue" type="number" class="input" placeholder="Window slot">
-                <select id="clickWindowLorR" class="input">
-                  <option value="0" class="button">Left click</option>
-                  <option value="1" class="button">Right click</option>
-                </select>
-                <button id="btnWindowClick" class="button">Click</button>
+              <div class="border">
+                <div class="input-group flex-colum">
+                  <input id="windowValue" type="number" class="input" placeholder="Window slot">
+                  <select id="clickWindowLorR" class="input">
+                    <option value="0" class="button">Left click</option>
+                    <option value="1" class="button">Right click</option>
+                  </select>
+                  <button id="btnWindowClick" class="button">Click</button>
+                </div>
               </div>
             </div>
+
             <div id="moveDirection" class="moveDirection functsBtn" style="display:none">
               <div class="input-group flex-colum center-elements">
-                <div>
-                  <span class="label">
-                    <label class="label-text">Control Move</label>
-                  </span>
-                </div>
+                <span class="label">
+                  <label class="label-text">Control Move</label>
+                </span>
                 <div>
                   <div class="border">
                     <div class="input-group flex-colum">
@@ -303,10 +316,15 @@
                       <button id="stopControl" class="button">Stop</button>
                     </div>
                   </div>
+                  <div class="input-group flex-colum center-elements">
+                    <span class="label">
+                      <label class="label-text">Following player</label>
+                    </span>
+                  </div>
                   <div class="border">
                     <div class="flex">
                       <div class="input-group flex-colum ">
-                        <input id="followingPlayer" class="input" placeholder="following player">
+                        <input id="followingPlayer" class="input" placeholder="Following player">
                       </div>
                     </div>
                     <div class="flex">
@@ -316,21 +334,48 @@
                       </div>
                     </div>
                   </div>
+                  <div class="input-group flex-colum center-elements">
+                    <span class="label">
+                      <label class="label-text">Circle</label>
+                    </span>
+                  </div>
+                  <div class="border">
+                    <div class="flex">
+                      <div class="input-group flex-colum ">
+                        <input id="circlePlayer" class="input" placeholder="Circle player">
+                      </div>
+                    </div>
+                    <span style="position: relative; top: 8px;">Radius(1-10) </span>
+                    <input id="circleRadius" type="range" min="1" max="10" value="1" class="slider" style="position: relative; width: 85px; top: 11px;">
+                    <div class="flex">
+                      <div class="input-group mu-4">
+                        <button id="startCircle" class="button">Start</button>
+                        <button id="stopCircle" class="button">Stop</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+
             <div id="look" class="look functsBtn" style="display:none">
-              <span class="label">
-                <label class="label-text">Look at direction</label>
-              </span>
-              <div class="input-group">
-                <select id="lookValue" class="select">
-                  <option value="0">North</option>
-                  <option value="3">South</option>
-                  <option value="-1.5">East</option>
-                  <option value="1.5">West</option>
-                </select>
-                <button id="setLook" class="button">Set</button>
+              <div class="input-group flex-colum center-elements">
+                <span class="label">
+                  <label class="label-text">Look at direction</label>
+                </span>
+              </div>
+              <div class="border">
+                <div class="input-group">
+                  <select id="lookValue" class="select" style="width: 93px;">
+                    <option value="0">North</option>
+                    <option value="3">South</option>
+                    <option value="-1.5">East</option>
+                    <option value="1.5">West</option>
+                    <option value="-1.5">Down</option>
+                    <option value="1.5">Up</option>
+                  </select>
+                  <button id="setLook" class="button" style="width: 96px;">Set</button>
+                </div>
               </div>
             </div>
             <div id="drop" class="drop functsBtn" style="display:none">
@@ -338,20 +383,117 @@
                 <span class="label">
                   <label class="label-text">Drop items</label>
                 </span>
-                <div class="input-group flex-colum ">
-                  <input id="dropValue" class="input" type="number" placeholder="Inventory slot (Empty = all)">
-                  <button id="btnDrop" class="button">Drop</button>
+                <div class="border">
+                  <div class="input-group flex-colum ">
+                    <input id="dropValue" class="input" type="number" placeholder="Inventory slot (Empty = all)">
+                    <button id="btnDrop" class="button">Drop</button>
+                  </div>
                 </div>
               </div>
             </div>
+
             <div id="antiafk" class="antiafk functsBtn" style="display:none">
               <div class="input-group flex-colum center-elements">
                 <span class="label">
                   <label class="label-text">Anti-AFK</label>
                 </span>
-                <div class="input-group flex-colum">
-                  <button id="startAfk" class="button">Start</button>
-                  <button id="stopAfk" class="button">Stop</button>
+                <div class="border">
+                  <div class="input-group flex-colum" style="width: 189px;">
+                    <button id="startAfk" class="button">Start</button>
+                    <button id="stopAfk" class="button">Stop</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="captchaSolver" class="captchaSolver functsBtn" style="display: none;">
+              <div class="input-group flex-colum center-elements">
+                <span class="label">
+                  <label class="label-text">Captcha Solver</label>
+                </span>
+              </div>
+              <div class="flex">
+                <div class="border">
+                  <span class="label">
+                    <label class="label-text" id="botCaptcha">Bot: </label>
+                  </span>
+                  <div class="flex">
+                    <div id="captchaOutput">
+                      <img id="captcha" src="">
+                    </div>
+                  </div>
+                  <span class="label">
+                    <label class="label-text" id="solveCaptcha">Answer: </label>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div id="killaura" class="killaura functsBtn" style="display: none;">
+              <div class="input-group flex-colum center-elements">
+                <span class="label">
+                  <label class="label-text">KillAura</label>
+                </span>
+              </div>
+              <div class="flex">
+                <div class="border">
+                  <div class="flex">
+                    <label class="container">
+                      <label>Toggle</label>
+                      <input id="toggleka" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                  <hr>
+                  <span>Range(1-5)</span>
+                  <input id="kaRange" type="range" min="1" max="5" value="1" class="slider" style="width: 100px;">
+                  <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
+                    <label class="container">
+                      <label>Delay</label>
+                    </label>
+                    <input id="kaDelay" type="number" min="0" class="input-sm m-1" placeholder="(500ms)">
+                  </div>
+                  <div class="flex">
+                    <label class="container" style="margin-top: 7px;">
+                      <label>Look at target</label>
+                      <input id="toggleKaLook" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                  <div class="flex">
+                    <label class="container" style="margin-top: 3px;">
+                      <label>Ignore selected</label>
+                      <input id="checkKaIgnoreSelected" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                  <div class="input-group flex-colum center-elements">
+                    <span class="label" style="position: fixed; top: 250px;">
+                      <label class="label-text">Targets</label>
+                    </span>
+                  </div>
+                  <div class="border mu-4" style="width:164px;">
+                    <label class="container">
+                      <label>Player</label>
+                      <input id="kaTp" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                    <label class="container" style="margin-top: 3px;">
+                      <label>Vehicle</label>
+                      <input id="kaTv" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                    <label class="container" style="margin-top: 3px;">
+                      <label>Mob</label>
+                      <input id="kaTm" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                    <label class="container" style="margin-top: 3px;">
+                      <label>Animal</label>
+                      <input id="kaTa" type="checkbox">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -403,7 +545,6 @@
 
       <div id="proxyTab" class="tab-pane">
         <div class="flex">
-
           <div class="m-4">
             <div>
               <textarea id="proxyTextBox" class="textbox" placeholder="Proxy list"></textarea>
@@ -508,6 +649,12 @@
               <input id="checkboxSprint" type="checkbox">
               <span class="checkmark"></span>
             </label>
+            <div class="flex">
+              <label class="container">
+                <label>Key</label>
+              </label>
+              <input id="keyCaptchaGuru" type="password" class="input-sm m-1" placeholder="Key on Captcha Guru" style="width: 135px;">
+            </div>
           </div>
           <div class="border m-4" style="width: 275px;">
             <span class="label" style="position: relative; top:-25px">
@@ -528,105 +675,6 @@
             <input id="proxyOrderRnd" type="checkbox">
             <span class="checkmark"></span>
           </label>
-        </div>
-      </div>
-
-      <div id="cheats" class="tab-pane m-4">
-        <div class="flex">
-          <div class="border">
-            <span class="label" style="position: relative; top:-27px">
-              <label class="label-text">KillAura</label>
-            </span>
-            <div class="flex">
-              <label class="container">
-                <label>Toggle killaura</label>
-                <input id="toggleka" type="checkbox">
-                <span class="checkmark"></span>
-                <hr>
-              </label>
-            </div>
-            <span>Range(1-6)</span>
-            <input id="kaRange" type="range" min="1" max="6" value="1" class="slider">
-            <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
-              <label class="container">
-                <label>Delay</label>
-              </label>
-              <input id="kaDelay" type="number" min="0" class="input-sm m-1" placeholder="(500ms)">
-            </div>
-            <div class="flex">
-              <label class="container" style="margin-top: 10px;">
-                <label>Look at target</label>
-                <input id="toggleKaLook" type="checkbox">
-                <span class="checkmark"></span>
-              </label>
-            </div>
-            <div class="flex">
-              <label class="container">
-                <label>Ignore selected bots</label>
-                <input id="checkKaIgnoreSelected" type="checkbox">
-                <span class="checkmark"></span>
-              </label>
-            </div>
-            <div class="border mu-4" style="width:370px;">
-              <span class="label" style="position: relative; top:-27px">
-                <label class="label-text">Targets</label>
-              </span>
-              <div class="flex">
-                <label class="container" style="margin-top: 10px;">
-                  <label>Player</label>
-                  <input id="kaTp" type="checkbox">
-                  <span class="checkmark"></span>
-                </label>
-                <label class="container" style="margin-top: 10px; margin-left: 10px;">
-                  <label>Vehicle</label>
-                  <input id="kaTv" type="checkbox">
-                  <span class="checkmark"></span>
-                </label>
-              </div>
-              <div class="flex">
-                <label class="container" style="margin-top: 10px;">
-                  <label>Mob</label>
-                  <input id="kaTm" type="checkbox">
-                  <span class="checkmark"></span>
-                </label>
-                <label class="container" style="margin-top: 10px; margin-left: 30px;">
-                  <label>Animal</label>
-                  <input id="kaTa" type="checkbox">
-                  <span class="checkmark"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="captchaBypass" class="tab-pane m-4">
-        <div class="flex">
-          <div class="border">
-            <span class="label" style="position: relative; top:-27px">
-              <label class="label-text">Captcha Bypass</label>
-            </span>
-            <div class="flex">
-              <label class="container">
-                <label>Toggle Captcha Bypass</label>
-                <input id="toggleCaptcha" type="checkbox">
-                <span class="checkmark"></span>
-                <hr>
-              </label>
-              <div class="flex">
-                <span class="label">
-                  <label class="label-text" id="botCaptcha">Bot: </label>
-                </span>
-              </div>
-            </div>
-            <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
-              <label class="container">
-                <label>Captcha</label>
-              </label>
-              <input id="captchaId" type="number" min="0" class="input-sm m-1" placeholder="Please write captcha">
-              <button id="sendcaptchaID" class="button">Send</button>
-            </div>
-          </div>
         </div>
       </div>
 

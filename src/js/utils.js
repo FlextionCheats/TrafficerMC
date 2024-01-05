@@ -6,7 +6,7 @@ const ProxyAgent = require('proxy-agent')
 const botApi = new EventEmitter()
 const fetch = require('node-fetch')
 const fs = require('fs')
-const currentVersion = "2.3"
+const currentVersion = "2.4"
 let stopBot = false
 
 // bot stop event listener
@@ -54,7 +54,7 @@ async function connectBot() {
 
 // connection methods
 async function startAccountFile(accountFile) {
-    sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> Account File Loaded. </li>`)
+    sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> System Account File Loaded. </li>`)
     const file = fs.readFileSync(accountFile)
     const lines = file.toString().split(/\r?\n/)
     const count = idBotCount.value ? idBotCount.value : lines.length
@@ -217,7 +217,7 @@ async function exeAll(command, ...args) {
         await delay(idLinearValue.value)
     }
     if(command === "hit") return;
-    sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [${command}] ${args} </li>`)
+    sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> System [${command}] ${args} </li>`)
 }
 
 function updateBotCount() {
