@@ -17,6 +17,7 @@ const captchaCheckState = new Map();
 
 const bots = [];
 let index = 0;
+const jump = false;
 
 // ids
 const idBotUsername = document.getElementById('botUsename')
@@ -124,6 +125,8 @@ const idKeyCaptcha = document.getElementById('keyCaptchaGuru')
 const idCircleRadius = document.getElementById('circleRadius')
 const idStartCircle = document.getElementById('startCircle')
 const idStopCircle = document.getElementById('stopCircle')
+const idFriends = document.getElementById('friends')
+const idAutoJump = document.getElementById('autojump')
 
 // button listeners
 
@@ -206,7 +209,6 @@ idStopCircle.onclick = () => {exeAll('circleoff')}
 async function newBot(options) {
     const bot = createBot(options)
     let afkLoaded = false
-    const movements = new Movements(bot);
 
     await bot.once('login', ()=> {
         botApi.emit("login", bot.username)
@@ -315,14 +317,7 @@ async function newBot(options) {
         })
 
         botApi.on(bot.username+'circleon', (o) => {
-            const center = getAverageCoordinates();
-
-            const targetX = center.x + radius * Math.cos(bot.entity.yaw);
-            const targetZ = center.z + radius * Math.sin(bot.entity.yaw);
-
-            const goal = new goals.GoalFollow(null, { x: targetX, y: bot.entity.position.y, z: targetZ });
-            bot.pathfinder.setMovements(movements);
-            bot.pathfinder.setGoal(goal);
+            
         })
 
         function getAverageCoordinates() {
@@ -377,38 +372,86 @@ async function newBot(options) {
                 if (distance <= idKarange.value) {
                     if (entity.kind === "Hostile mobs" && idTmob.checked) {
                         if (idKaLook.checked) {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.attack(entity);
                         }
                         sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.kind === "Passive mobs" && idTanimal.checked) {
                         if (idKaLook.checked) {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.attack(entity);
                         }
                         sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.kind === "Vehicles" && idTvehicle.checked) {
                         if (idKaLook.checked) {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.attack(entity);
                         }
                         sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
-                    if (entity.type === "player" && entity.username !== bot.username && idTplayer.checked) {
+                    if (entity.type === "player" && entity.username !== bot.username && idTplayer.checked && !idFriends.value.toString().split(",").includes(entity.username)) {
                         const list = selectedList()
                         if(list.includes(entity.username) && idCheckIgnoreFriends.checked) return;
                         if (idKaLook.checked) {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
+                            if(idAutoJump.checked === true && !jump) {
+                                bot.setControlState('jump', true)
+                                setTimeout(() => {
+                                    bot.setControlState('jump', false)
+                                }, 250)
+                            }
                             bot.attack(entity);
                         }
                         sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.username} </li>`)
@@ -420,7 +463,7 @@ async function newBot(options) {
     
     bot.once('spawn', () => {
         botApi.emit("spawn", bot.username)
-        if(idJoinMessage) {
+        if(idJoinMessage.value != '') {
             bot.chat("/register " + idJoinMessage.value)
             bot.chat("/login " + idJoinMessage.value)
         }
@@ -467,13 +510,6 @@ async function newBot(options) {
 
     function followPlayer() {
         if (targetPlayer) {
-            const mcData = require('minecraft-data')(bot.version);
-            const movements = new Movements(bot, mcData);
-            bot.pathfinder.setMovements(movements);
-
-            const goal = new goals.GoalFollow(targetPlayer.entity, { range: 1, speed: 0.97 });
-            bot.pathfinder.setGoal(goal, true);
-
             bot.on('physicTick', () => {
                 if (!targetPlayer || !targetPlayer.entity) {
                     stopFollow();
@@ -482,17 +518,74 @@ async function newBot(options) {
 
                 const distanceToPlayer = bot.entity.position.distanceTo(targetPlayer.entity.position);
 
-                if (distanceToPlayer > 5) {
+                const blockInFront = bot.blockAt(bot.entity.position.offset(0, 0, 1));
+                const blockInFront3 = bot.blockAt(bot.entity.position.offset(0, 0, -1));
+                const blockInFront2 = bot.blockAt(bot.entity.position.offset(1, 0, 0));
+                const blockInFront4 = bot.blockAt(bot.entity.position.offset(-1, 0, 0));
+                const blockInFront5 = bot.blockAt(bot.entity.position.offset(0, -1, 0));
+
+                const blockInFront11 = bot.blockAt(bot.entity.position.offset(1, -1, 0));
+                const blockInFront12 = bot.blockAt(bot.entity.position.offset(2, -1, 0));
+                const blockInFront13 = bot.blockAt(bot.entity.position.offset(3, -1, 0));
+
+                const blockInFront14 = bot.blockAt(bot.entity.position.offset(-1, -1, 0));
+                const blockInFront15 = bot.blockAt(bot.entity.position.offset(-2, -1, 0));
+                const blockInFront16 = bot.blockAt(bot.entity.position.offset(-3, -1, 0));
+
+                const blockInFront17 = bot.blockAt(bot.entity.position.offset(0, -1, 1));
+                const blockInFront18 = bot.blockAt(bot.entity.position.offset(0, -1, 2));
+                const blockInFront19 = bot.blockAt(bot.entity.position.offset(0, -1, 3));
+
+                const blockInFront20 = bot.blockAt(bot.entity.position.offset(0, -1, -1));
+                const blockInFront21 = bot.blockAt(bot.entity.position.offset(0, -1, -2));
+                const blockInFront22 = bot.blockAt(bot.entity.position.offset(0, -1, -3));
+
+                const blockInFront30 = bot.blockAt(bot.entity.position.offset(1, -1, 0));
+                const blockInFront31 = bot.blockAt(bot.entity.position.offset(2, -1, 0));
+                const blockInFront32 = bot.blockAt(bot.entity.position.offset(3, -1, 0));
+                const blockInFront33 = bot.blockAt(bot.entity.position.offset(4, -1, 0));
+
+                const blockInFront34 = bot.blockAt(bot.entity.position.offset(-1, -1, 0));
+                const blockInFront35 = bot.blockAt(bot.entity.position.offset(-2, -1, 0));
+                const blockInFront36 = bot.blockAt(bot.entity.position.offset(-3, -1, 0));
+                const blockInFront37 = bot.blockAt(bot.entity.position.offset(-4, -1, 0));
+
+                const blockInFront38 = bot.blockAt(bot.entity.position.offset(0, -1, 1));
+                const blockInFront39 = bot.blockAt(bot.entity.position.offset(0, -1, 2));
+                const blockInFront40 = bot.blockAt(bot.entity.position.offset(0, -1, 3));
+                const blockInFront41 = bot.blockAt(bot.entity.position.offset(0, -1, 4));
+
+                const blockInFront42 = bot.blockAt(bot.entity.position.offset(0, -1, -1));
+                const blockInFront43 = bot.blockAt(bot.entity.position.offset(0, -1, -2));
+                const blockInFront44 = bot.blockAt(bot.entity.position.offset(0, -1, -3));
+                const blockInFront45 = bot.blockAt(bot.entity.position.offset(0, -1, -4));
+
+                if ((distanceToPlayer > 1) || (
+                    (blockInFront11 && blockInFront12 && blockInFront13 && blockInFront11.type === 0 && blockInFront12.type === 0 && blockInFront13.type === 0) ||
+                    (blockInFront14 && blockInFront15 && blockInFront16 && blockInFront14.type === 0 && blockInFront15.type === 0 && blockInFront16.type === 0) ||
+                    (blockInFront17 && blockInFront18 && blockInFront19 && blockInFront17.type === 0 && blockInFront18.type === 0 && blockInFront19.type === 0) ||
+                    (blockInFront20 && blockInFront21 && blockInFront22 && blockInFront20.type === 0 && blockInFront21.type === 0 && blockInFront22.type === 0)
+                    )) {
                     bot.setControlState('sprint', true);
-                } else {
+                } else if(blockInFront5 && blockInFront5.type !== 0) {
                     bot.setControlState('sprint', false);
+                }
+
+                if ((distanceToPlayer > 1)) {
+                    bot.setControlState('forward', true);
+                } else {
+                    bot.setControlState('forward', false);
                 }
     
                 bot.lookAt(targetPlayer.entity.position.offset(0, targetPlayer.entity.height, 0));
-    
-                const blockInFront = bot.blockAt(bot.entity.position.offset(0, 0, 1));
 
-                if (blockInFront && blockInFront.type !== 0) {
+                if (
+                    (blockInFront && blockInFront.type !== 0) || 
+                    (blockInFront2 && blockInFront2.type !== 0) ||
+                    (blockInFront3 && blockInFront3.type !== 0) ||
+                    (blockInFront4 && blockInFront4.type !== 0) ||
+                    (blockInFront5 && blockInFront5.type === 0)
+                    ) {
                     bot.setControlState('jump', true);
                     setTimeout(() => {
                         bot.setControlState('jump', false);
@@ -504,8 +597,9 @@ async function newBot(options) {
 
     function stopFollow() {
         bot.pathfinder.setGoal(null);
-        bot.setControlState('jump', false);
+        bot.setControlState('forward', false);
         bot.setControlState('sprint', false);
+        bot.setControlState('jump', false);
     }
 }
 
@@ -623,6 +717,12 @@ async function captchaSolverValue() {
         }
 
         botCaptcha.on('end', () => {
+            fs.unlink(`${__dirname}/assets/captcha_` + bots[index].username + '.png', (err) => {});
+            captchaCheckState.delete(botCaptcha.username);
+            index++;
+        })
+
+        botCaptcha.on('kicked', () => {
             fs.unlink(`${__dirname}/assets/captcha_` + bots[index].username + '.png', (err) => {});
             captchaCheckState.delete(botCaptcha.username);
             index++;
