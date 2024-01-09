@@ -14,6 +14,8 @@ let currentTime
 let targetPlayer = null;
 const radius = 3; 
 const captchaCheckState = new Map();
+let kaEntity = null;
+let lastAttackTime = 0;
 
 const bots = [];
 let index = 0;
@@ -365,11 +367,14 @@ async function newBot(options) {
     
         idBtnRc.addEventListener('click', () => {botApi.emit(bot.username+'reconnect')})
     
-        botApi.on(bot.username + 'hit', () => {
+        botApi.on(bot.username + 'hit', (dl) => {
             const entities = Object.values(bot.entities);
+            const currentTime = Date.now();
+            const timeSinceLastAttack = currentTime - lastAttackTime;
             entities.forEach((entity) => {
                 const distance = bot.entity.position.distanceTo(entity.position);
                 if (distance <= idKarange.value) {
+                    const randomOffset = () => (Math.random() * 14 - 7) * 0.0175
                     if (entity.kind === "Hostile mobs" && idTmob.checked) {
                         if (idKaLook.checked) {
                             if(idAutoJump.checked === true && !jump) {
@@ -389,7 +394,7 @@ async function newBot(options) {
                             }
                             bot.attack(entity);
                         }
-                        sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
+                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.kind === "Passive mobs" && idTanimal.checked) {
                         if (idKaLook.checked) {
@@ -410,7 +415,7 @@ async function newBot(options) {
                             }
                             bot.attack(entity);
                         }
-                        sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
+                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.kind === "Vehicles" && idTvehicle.checked) {
                         if (idKaLook.checked) {
@@ -431,10 +436,11 @@ async function newBot(options) {
                             }
                             bot.attack(entity);
                         }
-                        sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
+                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.type === "player" && entity.username !== bot.username && idTplayer.checked && !idFriends.value.toString().split(",").includes(entity.username)) {
                         const list = selectedList()
+                        kaEntity = entity;
                         if(list.includes(entity.username) && idCheckIgnoreFriends.checked) return;
                         if (idKaLook.checked) {
                             if(idAutoJump.checked === true && !jump) {
@@ -443,8 +449,12 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.lookAt(entity.position, true);
-                            bot.attack(entity);
+                            bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true);
+                            let interval = dl || 500;
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTime = currentTime;
+                            }
                         } else {
                             if(idAutoJump.checked === true && !jump) {
                                 bot.setControlState('jump', true)
@@ -454,7 +464,7 @@ async function newBot(options) {
                             }
                             bot.attack(entity);
                         }
-                        sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.username} </li>`)
+                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.username} </li>`)
                     }
                 }
             });
@@ -473,6 +483,7 @@ async function newBot(options) {
     bot.once('kicked', (reason)=> {
         botApi.emit("kicked", bot.username, reason)
     });
+
     bot.once('end', (reason)=> {
         botApi.emit("end", bot.username, reason)
         if(idCheckAutoRc.checked === true) {
@@ -483,6 +494,7 @@ async function newBot(options) {
             }
         }
     });
+
     bot.once('error', (err)=> {
         botApi.emit("error", bot.username, err)
     });
@@ -497,12 +509,14 @@ async function newBot(options) {
     bot.on('windowOpen', (window) => {
         sendLog(`[${bot.username}] Window opened`)
     })
+
     bot.on('death', function() {
         botApi.emit('death', bot.username)
         bot.once('respawn', function() {
             if(idCheckOnDeath.checked && idScriptPath.value) { startScript(bot.username, idScriptPath.value)}
         })
     })
+
     bot.on('respawn', function() {
         botApi.emit('respawn', bot.username)
         if(idCheckOnRespawn.checked && idScriptPath.value) { startScript(bot.username, idScriptPath.value)}
@@ -604,10 +618,13 @@ async function newBot(options) {
 }
 
 botApi.on('toggleka', (dl)=> {
-    botApi.once('stopka', ()=> {clearInterval(katoggle)})
+    botApi.once('stopka', ()=> {
+        clearInterval(katoggle)
+    })
+
     var katoggle = setInterval(() => {
-        exeAll('hit')
-    }, dl ? dl: 500);
+        exeAll('hit', dl)
+    }, 20);
 })
 
 botApi.on('spam', (msg, dl) => {
@@ -717,12 +734,6 @@ async function captchaSolverValue() {
         }
 
         botCaptcha.on('end', () => {
-            fs.unlink(`${__dirname}/assets/captcha_` + bots[index].username + '.png', (err) => {});
-            captchaCheckState.delete(botCaptcha.username);
-            index++;
-        })
-
-        botCaptcha.on('kicked', () => {
             fs.unlink(`${__dirname}/assets/captcha_` + bots[index].username + '.png', (err) => {});
             captchaCheckState.delete(botCaptcha.username);
             index++;
