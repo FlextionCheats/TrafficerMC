@@ -14,12 +14,10 @@ let currentTime
 let targetPlayer = null;
 const radius = 3; 
 const captchaCheckState = new Map();
-let kaEntity = null;
-let lastAttackTime = 0;
+let following = false;
 
 const bots = [];
 let index = 0;
-const jump = false;
 
 // ids
 const idBotUsername = document.getElementById('botUsename')
@@ -367,17 +365,19 @@ async function newBot(options) {
     
         idBtnRc.addEventListener('click', () => {botApi.emit(bot.username+'reconnect')})
     
+        const lastAttackTimes = {};
         botApi.on(bot.username + 'hit', (dl) => {
             const entities = Object.values(bot.entities);
-            const currentTime = Date.now();
-            const timeSinceLastAttack = currentTime - lastAttackTime;
+            if (!lastAttackTimes[bot.username]) {
+                lastAttackTimes[bot.username] = Date.now(); // Если нет, установить текущее время
+            }        
             entities.forEach((entity) => {
                 const distance = bot.entity.position.distanceTo(entity.position);
                 if (distance <= idKarange.value) {
                     const randomOffset = () => (Math.random() * 14 - 7) * 0.0175
                     if (entity.kind === "Hostile mobs" && idTmob.checked) {
                         if (idKaLook.checked) {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -386,7 +386,7 @@ async function newBot(options) {
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -398,7 +398,7 @@ async function newBot(options) {
                     }
                     if (entity.kind === "Passive mobs" && idTanimal.checked) {
                         if (idKaLook.checked) {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -407,7 +407,7 @@ async function newBot(options) {
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -419,7 +419,7 @@ async function newBot(options) {
                     }
                     if (entity.kind === "Vehicles" && idTvehicle.checked) {
                         if (idKaLook.checked) {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -428,7 +428,7 @@ async function newBot(options) {
                             bot.lookAt(entity.position, true);
                             bot.attack(entity);
                         } else {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -440,23 +440,26 @@ async function newBot(options) {
                     }
                     if (entity.type === "player" && entity.username !== bot.username && idTplayer.checked && !idFriends.value.toString().split(",").includes(entity.username)) {
                         const list = selectedList()
-                        kaEntity = entity;
                         if(list.includes(entity.username) && idCheckIgnoreFriends.checked) return;
                         if (idKaLook.checked) {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true);
+                            bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true, true, (entity.yaw - bot.entity.yaw), (entity.pitch - bot.entity.pitch));
                             let interval = dl || 500;
+
+                            const currentTime = Date.now();
+                            const timeSinceLastAttack = currentTime - lastAttackTimes[bot.username];
+
                             if (timeSinceLastAttack >= interval) {
                                 bot.attack(entity);
-                                lastAttackTime = currentTime;
+                                lastAttackTimes[bot.username] = currentTime;
                             }
                         } else {
-                            if(idAutoJump.checked === true && !jump) {
+                            if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
                                 setTimeout(() => {
                                     bot.setControlState('jump', false)
@@ -523,12 +526,14 @@ async function newBot(options) {
     })
 
     function followPlayer() {
-        if (targetPlayer) {
+        if (targetPlayer && targetPlayer.entity) {
+            following = true;
             bot.on('physicTick', () => {
                 if (!targetPlayer || !targetPlayer.entity) {
                     stopFollow();
                     return;
                 }
+                if(!following) {return}
 
                 const distanceToPlayer = bot.entity.position.distanceTo(targetPlayer.entity.position);
 
@@ -585,7 +590,7 @@ async function newBot(options) {
                     bot.setControlState('sprint', false);
                 }
 
-                if ((distanceToPlayer > 1)) {
+                if (distanceToPlayer > 1) {
                     bot.setControlState('forward', true);
                 } else {
                     bot.setControlState('forward', false);
@@ -610,7 +615,7 @@ async function newBot(options) {
     }
 
     function stopFollow() {
-        bot.pathfinder.setGoal(null);
+        following = false
         bot.setControlState('forward', false);
         bot.setControlState('sprint', false);
         bot.setControlState('jump', false);
@@ -624,7 +629,7 @@ botApi.on('toggleka', (dl)=> {
 
     var katoggle = setInterval(() => {
         exeAll('hit', dl)
-    }, 20);
+    }, 1);
 })
 
 botApi.on('spam', (msg, dl) => {
