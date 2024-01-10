@@ -13,8 +13,7 @@ async function rotate(bot) {
     });
   }
   async function swingArm(bot) {
-    let arm = Math.random() < 0.5 ? 'right' : 'left';
-    await bot.swingArm(hand = arm);
+    await bot.swingArm(hand = 'right');
   }
   async function start(bot) {
     if (bot.afk.stopping) {
