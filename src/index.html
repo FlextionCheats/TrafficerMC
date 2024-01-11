@@ -143,7 +143,6 @@
               <button class="button" data-target=".captchaSolver">Captcha Solver</button>
               <button class="button" data-target=".view">ViewBot</button>
               <button class="button" data-target=".chat">Chat</button>
-              <button class="button" data-target=".spam">Spam</button>
               <button class="button" data-target=".setHotbatSlot">Set hotbar slot</button>
               <button class="button" data-target=".clickWindow">Click window</button>
               <button class="button" data-target=".moveDirection">Control move</button>
@@ -175,21 +174,6 @@
             <div id="chat" class="chat functsBtn" style="display:none">
               <div class="input-group flex-colum center-elements">
                 <span class="label">
-                  <label class="label-text">Send message</label>
-                </span>
-                <div class="border">
-                  <div class="input-group flex-colum">
-                    <input id="chatMessage" class="input" type="text" placeholder="Message">
-                    <button id="btnChatMessage" class="button mu-4">Send</button>
-                    <button id="btnRegisterMessage" class="button mu-4">Register</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div id="spam" class="spam functsBtn" style="display:none">
-              <div class="input-group center-elements flex-colum">
-                <span class="label">
                   <label class="label-text">Spam message</label>
                 </span>
                 <div class="border">
@@ -210,6 +194,16 @@
                   </div>
                   <div class="input-group flex-colum">
                     <input id="antiSpamLength" class="input" type="number" min="1" placeholder="Random letters (Default 5)">
+                  </div>
+                </div>
+                <span class="label">
+                  <label class="label-text">Send message</label>
+                </span>
+                <div class="border">
+                  <div class="input-group flex-colum">
+                    <input id="chatMessage" class="input" type="text" placeholder="Message">
+                    <button id="btnChatMessage" class="button mu-4">Send</button>
+                    <button id="btnRegisterMessage" class="button mu-4">Register</button>
                   </div>
                 </div>
               </div>
