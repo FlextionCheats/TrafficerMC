@@ -77,6 +77,7 @@ img {
     cursor: pointer;
     border-width: 1px;
     border-color: var(--button-border-color);
+    border-radius: 3px;
 }
 .button-selected {
     border-color: var(--selected-item-color);
@@ -90,7 +91,7 @@ img {
     width: 100%;
     align-items: stretch;
 }
-.btn.close:hover {
+.btnclose:hover {
     filter: brightness(0) saturate(100%) invert(16%) sepia(85%) saturate(7467%) hue-rotate(359deg) brightness(97%) contrast(108%) 
 }
 .btn.minimize:hover {
@@ -220,7 +221,7 @@ ul {
     background-color: var(--ul-bg-color);
     opacity: var(--ul-opacity);
     padding: 0px 0px;
-    overflow: scroll;
+    overflow: auto;
     border: var(--button-border-color);
     border-style: solid;
     border-width: 1px;
@@ -337,15 +338,49 @@ ul li {
 .botSelected {
     background-color: var(--selected-item-color);
 }
+.beta-version {
+    width: 50px;
+    height: 20px;
+    background: linear-gradient(45deg, #FF69B4, #8A2BE2, #1E90FF);
+    background-color: #FFFFFF;
+    border-radius: 5px;
+    margin-left: 7px;
+}
+.loading-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.loading-text {
+    font-size: 36px;
+    opacity: 0;
+    animation: fadeIn 6s forwards;
+}
+.trafficer {
+    opacity: 0;
+    animation: fadeIn 3s 3s forwards;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 .popup-content {
     position: relative;
     right: -100%;
     width: fit-content;
     padding: 5px 5px;
-    margin: 1px;
-    background-color: var(--button-color);
+    margin: 2px;
+    background-color: var(--bg-color);
     border: 1px solid var(--downbar-color);
-    transition: all 0.5s ease-out;
+    border-radius: 7px;
+    text-shadow: 1px 1px 1px #000000;
+    transition: all 0.3s ease-out;
     user-select: none;
 }
 .popup-content.hide {
@@ -363,6 +398,12 @@ ul li {
 }
 .popup:hover {
     display: block;
+}
+.popup-icon {
+    max-width: 100%;
+    max-height: 100%;
+    margin-right: 4px;
+    vertical-align: middle;
 }
 :root {
     --background-image: url('../assets/images/background.svg');

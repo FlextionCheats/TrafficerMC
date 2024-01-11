@@ -210,7 +210,8 @@ function proxyLog(log) {
 async function exeAll(command, ...args) {
     
     const list = selectedList()
-    if(list.length === 0) return sendLog(`<li> <img src="./assets/icons/alert-triangle.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(89%) sepia(82%) saturate(799%) hue-rotate(1deg) brightness(103%) contrast(102%)">No bots selected!</li>`);
+    if(list.length === 0) return notification("No bots selected", "warning")
+    //sendLog(`<li> <img src="./assets/icons/alert-triangle.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(89%) sepia(82%) saturate(799%) hue-rotate(1deg) brightness(103%) contrast(102%)">No bots selected!</li>`);
     
     for (var i = 0; i < list.length; i++) {
         botApi.emit(list[i] + command, ...args)
@@ -262,7 +263,7 @@ function checkVer() {
         .then(result => {
             if (result.replaceAll("\n", "").replaceAll(" ", "") !== currentVersion) {
                 outdatedVersionAlert.style.display = outdatedVersionAlert.style.display.replace("none", "")
-                createPopup("New version found, Please update", "red")
+                notification("New version found, Please update", "error")
             }
         })
 }
@@ -287,18 +288,34 @@ function loadTheme(file) {
             link.rel = "stylesheet";
         
             document.getElementsByTagName("head")[0].appendChild(link);
-            createPopup("Loaded custom CSS", "green")
+            notification("Loaded custom CSS", "info")
         }
     });
 }
 
-// Create the pop-up element
-function createPopup(text, color) {
+function notification(text, type) {
     const popup = document.createElement('li');
     popup.classList.add('popup-content');
-    popup.textContent = text;
-    if(color) popup.style.color = color;
 
+    popup.textContent = text;
+
+    const popupIcon = document.createElement('img');
+    popupIcon.classList.add('popup-icon');
+
+    if(type === "warning") {
+        popup.style.color = "#FFFFFF";
+        popupIcon.src = "./assets/icons/alert-triangle.svg";
+        popupIcon.style = "filter: brightness(0) saturate(100%) invert(89%) sepia(82%) saturate(799%) hue-rotate(1deg) brightness(103%) contrast(102%)"
+    } else if(type === "error") {
+        popup.style.color = "#FFFFFF"; 
+        popupIcon.src = "./assets/icons/error.svg";
+        popupIcon.style = "filter: invert(32%) sepia(95%) saturate(2397%) hue-rotate(340deg) brightness(101%) contrast(114%);"
+    } else if(type === "info") {
+        popup.style.color = "#FFFFFF"; 
+        popupIcon.src = "./assets/icons/info.svg";
+    }
+
+    popup.appendChild(popupIcon);
     idPopupUl.appendChild(popup);
 
     setTimeout(() => {
@@ -306,10 +323,11 @@ function createPopup(text, color) {
     }, 100);
     setTimeout(() => {
         popup.style.opacity = 0;
+        popup.style.transform = 'translateX(100%)';
         setTimeout(() => {
             popup.remove()
-        }, 300);
-    }, 3000);
+        }, 275);
+    }, 2000);
 }
 
 // json to html format
@@ -666,7 +684,7 @@ module.exports = {
     checkVer,
     genName,
     loadTheme,
-    createPopup,
+    notification,
     formatText,
     selectedList,
     checkAuth,

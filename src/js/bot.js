@@ -1,7 +1,7 @@
 const { ipcRenderer, shell } = require("electron");
 const fs = require('fs');
 const path = require('path');
-const { getColor, mineflayerViewer, connectBot, delay, salt, addPlayer, rmPlayer, errBot, botApi, sendLog, exeAll, checkVer, startScript, loadTheme, createPopup, formatText, selectedList, checkAuth, createBot, scrapeProxy } = require(path.join(__dirname, "js", "utils.js"));
+const { getColor, mineflayerViewer, connectBot, delay, salt, addPlayer, rmPlayer, errBot, botApi, sendLog, exeAll, checkVer, startScript, loadTheme, notification, formatText, selectedList, checkAuth, createBot, scrapeProxy } = require(path.join(__dirname, "js", "utils.js"));
 const { checkProxy } = require(path.join(__dirname, "js", "plugins", "proxy.js"))
 const antiafk = require(path.join(__dirname, "js", "plugins", "afk.js"))
 const captchaSolver = require(`${__dirname}/js/plugins/captchaSolver.js`);
@@ -25,7 +25,7 @@ const idAuthType = document.getElementById('botAuthType')
 const idIp = document.getElementById('botConnectIp')
 const idBotCount = document.getElementById('botCount')
 const idJoinDelay = document.getElementById('joinDelay')
-const idJoinMessage = document.getElementById('joinMessage')
+const idJoinMessage = document.getElementById('password')
 const idBtnStart = document.getElementById('btnStart')
 const idBtnStop = document.getElementById('btnStop')
 const idBotVersion = document.getElementById('botversion')
@@ -137,7 +137,7 @@ window.onload = () => {
 
 idBtnStart.onclick = () => {
     if(idNameMethod.value == "default" && !idBotUsername.value) {
-        createPopup("Invalid Username!", "red")
+        notification("!Invalid Username", "error")
         return;
     }
     connectBot();
@@ -162,14 +162,14 @@ idStartScrape.onclick = () => {scrapeProxy()}
 idStartProxyCheck.onclick = () => {checkProxy(idProxylist.value)}
 idBtnCheckFile.onclick = () => {
     const path = fs.readFileSync(idProxyFilePath.files[0].path)
-    if (!path) return createPopup("No file selected.")
+    if (!path) return notification("No file selected.", "error")
     const list = path.toString()
     checkProxy(list)
 }
 
 idBtnStartScript.onclick = () => {
     const list = selectedList()
-    if(list.length === 0) return createPopup("No bot selected")
+    if(list.length === 0) return notification("!No bot selected", "warning")
     list.forEach(name => {
         startScript(name, idScriptPath.value)
     });
@@ -369,10 +369,13 @@ async function newBot(options) {
         botApi.on(bot.username + 'hit', (dl) => {
             const entities = Object.values(bot.entities);
             if (!lastAttackTimes[bot.username]) {
-                lastAttackTimes[bot.username] = Date.now(); // Если нет, установить текущее время
+                lastAttackTimes[bot.username] = Date.now();
             }        
             entities.forEach((entity) => {
                 const distance = bot.entity.position.distanceTo(entity.position);
+                let interval = dl || 500;
+                const currentTime = Date.now();
+                const timeSinceLastAttack = currentTime - lastAttackTimes[bot.username];
                 if (distance <= idKarange.value) {
                     const randomOffset = () => (Math.random() * 14 - 7) * 0.0175
                     if (entity.kind === "Hostile mobs" && idTmob.checked) {
@@ -383,8 +386,11 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.lookAt(entity.position, true);
-                            bot.attack(entity);
+                            bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true, true, (entity.yaw - bot.entity.yaw), (entity.pitch - bot.entity.pitch));
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         } else {
                             if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
@@ -392,9 +398,11 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.attack(entity);
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         }
-                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.kind === "Passive mobs" && idTanimal.checked) {
                         if (idKaLook.checked) {
@@ -404,8 +412,11 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.lookAt(entity.position, true);
-                            bot.attack(entity);
+                            bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true, true, (entity.yaw - bot.entity.yaw), (entity.pitch - bot.entity.pitch));
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         } else {
                             if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
@@ -413,9 +424,11 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.attack(entity);
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         }
-                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.kind === "Vehicles" && idTvehicle.checked) {
                         if (idKaLook.checked) {
@@ -425,8 +438,11 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.lookAt(entity.position, true);
-                            bot.attack(entity);
+                            bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true, true, (entity.yaw - bot.entity.yaw), (entity.pitch - bot.entity.pitch));
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         } else {
                             if(idAutoJump.checked === true) {
                                 bot.setControlState('jump', true)
@@ -434,9 +450,11 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.attack(entity);
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         }
-                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.displayName ? entity.displayName : "Unknown Entity"} </li>`)
                     }
                     if (entity.type === "player" && entity.username !== bot.username && idTplayer.checked && !idFriends.value.toString().split(",").includes(entity.username)) {
                         const list = selectedList()
@@ -449,10 +467,6 @@ async function newBot(options) {
                                 }, 250)
                             }
                             bot.lookAt(entity.position.offset(randomOffset(), 1.1, randomOffset()), true, true, (entity.yaw - bot.entity.yaw), (entity.pitch - bot.entity.pitch));
-                            let interval = dl || 500;
-
-                            const currentTime = Date.now();
-                            const timeSinceLastAttack = currentTime - lastAttackTimes[bot.username];
 
                             if (timeSinceLastAttack >= interval) {
                                 bot.attack(entity);
@@ -465,9 +479,12 @@ async function newBot(options) {
                                     bot.setControlState('jump', false)
                                 }, 250)
                             }
-                            bot.attack(entity);
+
+                            if (timeSinceLastAttack >= interval) {
+                                bot.attack(entity);
+                                lastAttackTimes[bot.username] = currentTime;
+                            }
                         }
-                        //sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)"> [hit] ${entity.username} </li>`)
                     }
                 }
             });
@@ -476,9 +493,9 @@ async function newBot(options) {
     
     bot.once('spawn', () => {
         botApi.emit("spawn", bot.username)
-        if(idJoinMessage.value != '') {
-            bot.chat("/register " + idJoinMessage.value)
-            bot.chat("/login " + idJoinMessage.value)
+        if(idJoinMessage.value) {
+            bot.chat("/register " + idJoinMessage.value ? idJoinMessage.value : "qwerty123123")
+            bot.chat("/login " + idJoinMessage.value ? idJoinMessage.value : "qwerty123123")
         }
         bot.loadPlugin(pathfinder);
     });
@@ -641,7 +658,8 @@ botApi.on('spam', (msg, dl) => {
 
 botApi.on("login", (name)=> {
     addPlayer(name)
-    sendLog(`<li> <img src="./assets/icons/arrow-right.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(68%) sepia(74%) saturate(5439%) hue-rotate(86deg) brightness(128%) contrast(114%)"> ${name} Logged in.</li>`)
+    //sendLog(`<li> <img src="./assets/icons/arrow-right.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(68%) sepia(74%) saturate(5439%) hue-rotate(86deg) brightness(128%) contrast(114%)"> ${name} Logged in.</li>`)
+    notification(`${name} Connected`, "info")
 })
 botApi.on("end", (name, reason)=> {
     rmPlayer(name)
@@ -709,7 +727,7 @@ function saveData() {
         "botversion": document.getElementById('botversion').value,
         "botCount": document.getElementById('botCount').value,
         "joinDelay": document.getElementById('joinDelay').value,
-        "joinMessage": document.getElementById('joinMessage').value,
+        "joinMessage": document.getElementById('password').value,
         "scriptPath": document.getElementById('scriptPath').value,
         "key": document.getElementById('keyCaptchaGuru').value
     }))
