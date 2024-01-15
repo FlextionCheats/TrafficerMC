@@ -14,13 +14,14 @@
     "linux86": "electron-builder build --linux --ia32"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^4.15.0",
+    "@tensorflow/tfjs-node": "^4.15.0",
     "axios": "^1.6.4",
     "electron-store": "^8.1.0",
     "form-data": "^4.0.0",
+    "http": "^0.0.1-security",
     "minecraft-protocol": "^1.44.0",
     "mineflayer": "^4.14.0",
-    "mineflayer-pathfinder": "^2.4.0",
+    "mineflayer-pathfinder": "^2.4.5",
     "mineflayer-web-inventory": "^1.8.0",
     "node-fetch": "2.6.7",
     "pngjs-image": "^0.11.2",

@@ -7,6 +7,7 @@ const botApi = new EventEmitter()
 const fetch = require('node-fetch')
 const fs = require('fs')
 const currentVersion = "2.4"
+var http = require("http");
 let stopBot = false
 
 // bot stop event listener
@@ -71,50 +72,113 @@ function getBotInfo(botName, num) {
     const serverPort = idIp.value.split(':')[1] ? idIp.value.split(':')[1] : 25565;
 
     if (idProxyToggle.checked) {
-        const proxy = getProxy(num);
-        const proxyHost = proxy.split(":")[0];
-        const proxyPort = proxy.split(":")[1];
-        
-        options = {
-            connect: client => {
-                socks.createConnection({
-                    proxy: {
-                        host: proxyHost,
-                        port: parseInt(proxyPort),
-                        type: parseInt(idProxyType.value)
-                    },
-                    command: 'connect',
-                    destination: {
-                        host: serverHost,
-                        port: parseInt(serverPort)
-                    }
-                }, (err, info) => {
-                    if (err) {
-                        sendLog(`[ProxyError] [${botName}] [${proxyHost}:${proxyPort}] ${err}`)
-                        return;
-                    }
-                    client.setSocket(info.socket);
-                    client.emit('connect')
-                })
-            },
-            agent: new ProxyAgent({
-                protocol: `socks${idProxyType.value}`,
-                host: proxyHost,
-                port: proxyPort
-            }),
-            host: serverHost,
-            port: serverPort,
-            username: botName,
-            version: idBotVersion.value,
-            auth: idAuthType.value,
-            hideErrors: true,
-            easyMcToken: idAltToken.value,
-            onMsaCode: function(data) {
-                const code = data.user_code
-                sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)">[${botName}] First time signing in. Please authenticate now: To sign in, use a web browser to open the page <b style="cursor: pointer; color: blue;" onClick="shell.openExternal('https://www.microsoft.com/link')">https://www.microsoft.com/link</b> and enter the code: ${code} <img src="./assets/icons/clipboard.svg" onclick="navigator.clipboard.writeText('${code}')" style="cursor: pointer; filter: brightness(0) invert(1);" height="16px;"> to authenticate. </li>`)
+        if(idProxyType.value === "4" || idProxyType.value === "5") {
+            const proxy = getProxy(num);
+            const proxyHost = proxy.split(":")[0];
+            const proxyPort = proxy.split(":")[1];
+            
+            options = {
+                connect: client => {
+                    socks.createConnection({
+                        proxy: {
+                            host: proxyHost,
+                            port: parseInt(proxyPort),
+                            type: parseInt(idProxyType.value)
+                        },
+                        command: 'connect',
+                        destination: {
+                            host: serverHost,
+                            port: parseInt(serverPort)
+                        }
+                    }, (err, info) => {
+                        if (err) {
+                            sendLog(`[ProxyError] [${botName}] [${proxyHost}:${proxyPort}] ${err}`)
+                            return;
+                        }
+                        client.setSocket(info.socket);
+                        client.emit('connect')
+                    })
+                },
+                agent: new ProxyAgent({
+                    protocol: `socks${idProxyType.value}`,
+                    host: proxyHost,
+                    port: proxyPort
+                }),
+                checkTimeoutInterval: 65 * 10000,
+                connectTimeout: 60000,
+                host: serverHost,
+                port: serverPort,
+                username: botName,
+                version: idBotVersion.value,
+                auth: idAuthType.value,
+                hideErrors: true,
+                easyMcToken: idAltToken.value,
+                onMsaCode: function(data) {
+                    const code = data.user_code
+                    sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)">[${botName}] First time signing in. Please authenticate now: To sign in, use a web browser to open the page <b style="cursor: pointer; color: blue;" onClick="shell.openExternal('https://www.microsoft.com/link')">https://www.microsoft.com/link</b> and enter the code: ${code} <img src="./assets/icons/clipboard.svg" onclick="navigator.clipboard.writeText('${code}')" style="cursor: pointer; filter: brightness(0) invert(1);" height="16px;"> to authenticate. </li>`)
+                }
+            };
+            return options;
+        } else {
+            let proxyAuth
+            let proxyHost
+            let proxyPort
+            let authed
+            if (getProxy(num).split("@").length > 1) {
+                proxyAuth = btoa(getProxy(num).split("@")[0]);
+                proxyHost = getProxy(num).split("@")[1].split(":")[0];
+                proxyPort = parseInt(getProxy(num).split("@")[1].split(":")[1]);
+                authed = true
+            } else {
+                proxyHost = getProxy(num).split(":")[0];
+                proxyPort = parseInt(getProxy(num).split(":")[1]);
+                authed = false
             }
-        };
-        return options;
+            
+            options = {
+                connect: client => {
+                    let req = http.request({
+                        host: proxyHost,
+                        port: proxyPort,
+                        method: 'CONNECT',
+                        path: serverHost + ":" + parseInt(serverPort)
+                    });
+                    if (authed) {
+                        req = http.request({
+                            host: proxyHost,
+                            port: proxyPort,
+                            method: 'CONNECT',
+                            headers: {
+                                "host": `${serverHost}:${serverPort}`,
+                                "proxy-authorization": "Basic " + proxyAuth
+                            },
+                            path: serverHost + ':' + serverPort
+                        })
+                    }
+                    req.end()
+
+                    req.on('connect', (res, stream) => {
+                        client.setSocket(stream)
+                        client.emit('connect')
+                    })
+                },
+                agent: new ProxyAgent({ protocol: 'http', host: proxyHost, port: proxyPort }),
+                checkTimeoutInterval: 65 * 10000,
+                connectTimeout: 60000,
+                host: serverHost,
+                port: serverPort,
+                username: botName,
+                version: idBotVersion.value,
+                auth: idAuthType.value,
+                hideErrors: true,
+                easyMcToken: idAltToken.value,
+                onMsaCode: function(data) {
+                    const code = data.user_code
+                    sendLog(`<li> <img src="./assets/icons/code.svg" class="icon-sm" style="filter: brightness(0) saturate(100%) invert(28%) sepia(100%) saturate(359%) hue-rotate(172deg) brightness(93%) contrast(89%)">[${botName}] First time signing in. Please authenticate now: To sign in, use a web browser to open the page <b style="cursor: pointer; color: blue;" onClick="shell.openExternal('https://www.microsoft.com/link')">https://www.microsoft.com/link</b> and enter the code: ${code} <img src="./assets/icons/clipboard.svg" onclick="navigator.clipboard.writeText('${code}')" style="cursor: pointer; filter: brightness(0) invert(1);" height="16px;"> to authenticate. </li>`)
+                }
+            };
+            return options;
+        }
     } else {
         options = {
             host: serverHost,
@@ -193,9 +257,13 @@ function errBot(name) {
 function sendLog(log) {
     if(!log) return;
     const b = document.createElement("li")
+    //const minib = document.createElement("li")
     b.innerHTML = log
+    //minib.innerHTML = log
     idChatBox.appendChild(b)
     idChatBox.scrollTop = idChatBox.scrollHeight
+    //idMiniChatBox.appendChild(minib)
+    //idMiniChatBox.scrollTop = idMiniChatBox.scrollHeight
 }
 // logs info to proxy logs
 function proxyLog(log) {
@@ -294,40 +362,40 @@ function loadTheme(file) {
 }
 
 function notification(text, type) {
-    const popup = document.createElement('li');
-    popup.classList.add('popup-content');
+    const notify = document.createElement('div');
+    const notifyIcon = document.createElement('img');
 
-    popup.textContent = text;
+    notify.classList.add('notify-content');
+    notifyIcon.classList.add('notify-icon');
 
-    const popupIcon = document.createElement('img');
-    popupIcon.classList.add('popup-icon');
+    notify.textContent = text;
 
     if(type === "warning") {
-        popup.style.color = "#FFFFFF";
-        popupIcon.src = "./assets/icons/alert-triangle.svg";
-        popupIcon.style = "filter: brightness(0) saturate(100%) invert(89%) sepia(82%) saturate(799%) hue-rotate(1deg) brightness(103%) contrast(102%)"
+        notify.style.color = "#FFFFFF";
+        notifyIcon.src = "./assets/icons/alert-triangle.svg";
+        notifyIcon.style = "filter: brightness(0) saturate(100%) invert(89%) sepia(82%) saturate(799%) hue-rotate(1deg) brightness(103%) contrast(102%)"
     } else if(type === "error") {
-        popup.style.color = "#FFFFFF"; 
-        popupIcon.src = "./assets/icons/error.svg";
-        popupIcon.style = "filter: invert(32%) sepia(95%) saturate(2397%) hue-rotate(340deg) brightness(101%) contrast(114%);"
+        notify.style.color = "#FFFFFF"; 
+        notifyIcon.src = "./assets/icons/error.svg";
+        notifyIcon.style = "filter: invert(32%) sepia(95%) saturate(2397%) hue-rotate(340deg) brightness(101%) contrast(114%);"
     } else if(type === "info") {
-        popup.style.color = "#FFFFFF"; 
-        popupIcon.src = "./assets/icons/info.svg";
+        notify.style.color = "#FFFFFF"; 
+        notifyIcon.src = "./assets/icons/info.svg";
     }
 
-    popup.appendChild(popupIcon);
-    idPopupUl.appendChild(popup);
+    notify.appendChild(notifyIcon);
+    idPopupUl.appendChild(notify);
 
     setTimeout(() => {
-        popup.style.right = 0;
+        notify.style.right = 0;
     }, 100);
     setTimeout(() => {
-        popup.style.opacity = 0;
-        popup.style.transform = 'translateX(100%)';
+        notify.style.opacity = 0;
+        notify.style.transform = 'translateX(100%)';
         setTimeout(() => {
-            popup.remove()
+            notify.remove()
         }, 275);
-    }, 2000);
+    }, 2150);
 }
 
 // json to html format
@@ -412,27 +480,106 @@ function createBot(options) {
     return mineflayer.createBot(options)
 }
 
+const httpProxies = [
+    "http://worm.rip/http.txt",
+    "https://raw.githubusercontent.com/almroot/proxylist/master/list.txt",
+    "https://raw.githubusercontent.com/B4RC0DE-TM/proxy-list/main/HTTP.txt",
+    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+    "https://raw.githubusercontent.com/hendrikbgr/Free-Proxy-Repo/master/proxy_list.txt",
+    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt",
+    "https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt",
+    "https://raw.githubusercontent.com/mmpx12/proxy-list/master/http.txt",
+    "https://raw.githubusercontent.com/proxy4parsing/proxy-list/main/http.txt",
+    "https://raw.githubusercontent.com/RX4096/proxy-list/main/online/http.txt",
+    "https://raw.githubusercontent.com/saschazesiger/Free-Proxies/master/proxies/http.txt",
+    "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/http.txt",
+    "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/proxies.txt",
+    "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
+    "https://www.proxy-list.download/api/v1/get?type=http",
+    "https://raw.githubusercontent.com/rdavydov/proxy-list/main/proxies/http.txt",
+    "https://api.openproxylist.xyz/http.txt",
+]
+
+const socks4Proxies = [
+    "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks4.txt",
+    "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks4.txt",
+    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/socks4.txt",
+    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks4.txt",
+    "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS4_RAW.txt",
+    "https://www.proxy-list.download/api/v1/get?type=socks4",
+    "https://raw.githubusercontent.com/rdavydov/proxy-list/main/proxies/socks4.txt",
+    "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks4.txt", 
+    "https://api.openproxylist.xyz/socks4.txt",
+    "https://openproxylist.xyz/socks4.txt", 
+    "https://proxyspace.pro/socks4.txt" ,
+    "https://raw.githubusercontent.com/B4RC0DE-TM/proxy-list/main/SOCKS4.txt",
+]
+
+const socks5Proxies = [
+    "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
+    "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
+    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/socks5.txt",
+    "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
+    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt",
+    "https://raw.githubusercontent.com/roosterkid/openproxylist/main/SOCKS5_RAW.txt",
+    "https://raw.githubusercontent.com/manuGMG/proxy-365/main/SOCKS5.txt",
+    "https://www.proxy-list.download/api/v1/get?type=socks5",
+    "https://raw.githubusercontent.com/rdavydov/proxy-list/main/proxies/socks5.txt",
+    "https://raw.githubusercontent.com/mmpx12/proxy-list/master/socks5.txt",
+    "https://api.openproxylist.xyz/socks5.txt",
+    "https://openproxylist.xyz/socks5.txt",
+    "https://proxyspace.pro/socks5.txt",
+    "https://raw.githubusercontent.com/B4RC0DE-TM/proxy-list/main/SOCKS5.txt",
+]
+
 async function scrapeProxy() {
+    if(idScrapeProtocol.value === "4") {
+        getAllProxies(socks4Proxies).then(proxies => {
+            idProxylist.value += proxies
+            proxyLog("Proxy fetched:" + proxies.length)
+        }).catch(error => {
+            proxyLog('Error:', error);
+        });
+    } if(idScrapeProtocol.value === "5") {
+        getAllProxies(socks5Proxies).then(proxies => {
+            idProxylist.value += proxies
+            proxyLog("Proxy fetched:" + proxies.length)
+        }).catch(error => {
+            proxyLog('Error:', error);
+        });
+    } else {
+        getAllProxies(httpProxies).then(proxies => {
+            idProxylist.value += proxies
+            proxyLog("Proxy fetched:" + proxies.length)
+        }).catch(error => {
+            proxyLog('Error:', error);
+        });
+    }
+}
+
+async function getProxiesFromUrl(url) {
     try {
-        const items = await fetchList(`https://raw.githubusercontent.com/RattlesHyper/proxy/main/socks${idScrapeProtocol.value}`);
-        for (var i = 0; i < items.length; i++) {
-            let link = items[i]
-            proxyLog("Requesting proxy from " + link)
-            fetchList(link)
-            .then(items => {
-                let proxies = "";
-                proxyLog("Proxy fetched " + items.length)
-                items.forEach(proxy => {
-                    proxies += proxy+"\n"
-                });
-                idProxylist.value += proxies
-            })
-            .catch(error => {
-                proxyLog(error);
-            });
-        }
+        const response = await fetch(url);
+        const data = await response.text();
+        const proxyArray = data.split(',').map(proxy => proxy.trim());
+        return proxyArray.filter(proxy => proxy !== '');
     } catch (error) {
-        proxyLog(error);
+        console.error(`Ошибка при запросе прокси с ${url}: ${error.message}`);
+        return [];
+    }
+}
+
+// Функция для получения прокси с нескольких URL-ов
+async function getAllProxies(urls) {
+    try {
+        const results = await Promise.all(urls.map(url => getProxiesFromUrl(url)));
+        // Объединяем массивы прокси в один
+        const proxies = [].concat(...results);
+        return proxies;
+    } catch (error) {
+        console.error(`Ошибка при получении прокси: ${error.message}`);
+        return [];
     }
 }
 
@@ -692,5 +839,6 @@ module.exports = {
     scrapeProxy,
     botApi,
     mineflayerViewer,
-    getColor
+    getColor,
+    getProxy
 }

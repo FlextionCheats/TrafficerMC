@@ -5,6 +5,8 @@ const { getColor, mineflayerViewer, connectBot, delay, salt, addPlayer, rmPlayer
 const { checkProxy } = require(path.join(__dirname, "js", "plugins", "proxy.js"))
 const antiafk = require(path.join(__dirname, "js", "plugins", "afk.js"))
 const captchaSolver = require(`${__dirname}/js/plugins/captchaSolver.js`);
+const ProxyAgent = require('proxy-agent');
+const fetch = require('node-fetch');
 
 const inventoryViewer = require('mineflayer-web-inventory')
 const PNGImage = require('pngjs-image');
@@ -42,6 +44,7 @@ const idSpamDelay = document.getElementById('spamDelay')
 const idProxyToggle = document.getElementById('useProxy')
 const idDownbarBotCount = document.getElementById('downbarBotCount')
 const idChatBox = document.getElementById('chatBox')
+//const idMiniChatBox = document.getElementById('miniChatBox')
 const idCheckAutoRc = document.getElementById('checkboxAutoRc')
 const idReconDelay = document.getElementById('reconDelay')
 const idBtnSpam = document.getElementById('startSpam')
@@ -127,6 +130,7 @@ const idStartCircle = document.getElementById('startCircle')
 const idStopCircle = document.getElementById('stopCircle')
 const idFriends = document.getElementById('friends')
 const idAutoJump = document.getElementById('autojump')
+const idMineBerryBypass = document.getElementById('mineBerryBypass')
 
 // button listeners
 
@@ -526,6 +530,69 @@ async function newBot(options) {
         }
     });
 
+    bot.on('message', (message) => {
+        idMineBerryBypassonchange = () => {
+            if(idMineBerryBypass.checked) {
+                if (message.toString().includes('Please confirm that you are not a robot')) {
+                    const linkRegex = /(https?:\/\/[^\s]+)/;
+                    const linkMatch = message.toString().match(linkRegex);
+                    
+                    if (linkMatch && linkMatch.length > 0) {
+                      const link = linkMatch[0];
+          
+                      let proxyAuth
+                      let proxyHost
+                      let proxyPort
+                      let authed
+                      if (getProxy(num).split("@").length > 1) {
+                          proxyAuth = btoa(getProxy(num).split("@")[0]);
+                          proxyHost = getProxy(num).split("@")[1].split(":")[0];
+                          proxyPort = parseInt(getProxy(num).split("@")[1].split(":")[1]);
+                          authed = true
+                      } else {
+                          proxyHost = getProxy(num).split(":")[0];
+                          proxyPort = parseInt(getProxy(num).split(":")[1]);
+                          authed = false
+                      }
+          
+                      function getNextProxy() {
+                          return rotatingProxy;
+                      }
+          
+                      const requestOptions = {
+                          method: 'GET',
+                          headers: {
+                              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36',
+                              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                              'Accept-Language': 'en-US,en;q=0.9',
+                              'Connection': 'keep-alive',
+                              'Cache-Control': 'max-age=0',
+                          },
+                          agent: new ProxyAgent(getNextProxy()),
+                      };
+          
+                      fetch(link, requestOptions).then(response => {
+                          if (!response.ok) {
+                              throw new Error(`Ошибка HTTP: ${response.status}`);
+                          }
+                          return response.text();
+                      }).then(data => {
+                          
+                      }).catch(error => {
+                          
+                      });
+                    }
+                }
+            }
+        }
+        if(message.toString().includes('/reg ') || message.toString().includes('/register ')) {
+            bot.chat("/register 123123")
+            bot.chat("/register 123123 123123")
+        } else if(message.toString().includes('/login ')) {
+            bot.chat("/login 123123")
+        }
+      });
+
     bot.on('windowOpen', (window) => {
         sendLog(`[${bot.username}] Window opened`)
     })
@@ -727,9 +794,14 @@ function saveData() {
         "botversion": document.getElementById('botversion').value,
         "botCount": document.getElementById('botCount').value,
         "joinDelay": document.getElementById('joinDelay').value,
-        "joinMessage": document.getElementById('password').value,
+        "password": document.getElementById('password').value,
         "scriptPath": document.getElementById('scriptPath').value,
-        "key": document.getElementById('keyCaptchaGuru').value
+        "scriptCheck": document.getElementById('scriptCheck').value,
+        "scriptCheckOnDeath": document.getElementById('scriptCheckOnDeath').value,
+        "scriptCheckOnRespawn": document.getElementById('scriptCheckOnRespawn').value,
+        "keyCaptchaGuru": document.getElementById('keyCaptchaGuru').value,
+        "checkboxSprint": document.getElementById('checkboxSprint').value,
+        "friends": document.getElementById('friends').value
     }))
 }
 
@@ -768,3 +840,21 @@ async function captchaSolverValue() {
 }
 
 setInterval(captchaSolverValue, 650)
+
+let proxyIndex = 0; // Индекс текущего прокси
+
+function getProxy() {
+    const file = idProxylist.value;
+    const lines = file.toString().split(/\r?\n/);
+
+    if (lines.length === 0) {
+        console.error('Proxy list is empty');
+        return null;
+    }
+
+    const proxy = lines[proxyIndex];
+    proxyIndex = (proxyIndex + 1) % lines.length; // Переход к следующему прокси в цикле
+
+    return proxy;
+}
+

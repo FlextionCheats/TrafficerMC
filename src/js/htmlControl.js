@@ -32,7 +32,8 @@ function tabShowHideDiv(event) {
 }
 
 function clearChat() {
-    document.getElementById('chatBox').innerHTML = ""
+  document.getElementById('chatBox').innerHTML = ""
+  document.getElementById('miniChatBox').innerHTML = ""
 }
 
 function selectBot(event) {

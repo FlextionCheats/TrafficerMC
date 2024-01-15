@@ -9,7 +9,7 @@
         <img class="icon-sm" src="./assets/icons/icon.png">
         <label>TrafficerMC v2.4</label>
         <div class="beta-version">
-          <label style="position: relative; top: 2px; left: 8px;">Beta</label>
+          <label style="position: relative; top: 1px; left: 6px;">Beta</label>
         </div>
         <label id="topBarVersion" class="p-1"></label>
       </div>
@@ -23,14 +23,14 @@
     </div>
     <div class="trafficer">
       <div class="sidebar">
-          <ul class="flex-colum flex tab-selectors" style="border: none; opacity: 1;">
-          <button class="button tab active" onclick="openTab('general')">General</button>
-          <button id="btnBotting" class="button tab" onclick="openTab('botting')">Botting</button>
-          <button class="button tab" onclick="openTab('scripting')">Scripting</button>
-          <button class="button tab" onclick="openTab('proxyTab')">Proxy</button>
-          <button class="button tab" onclick="openTab('settings')">Settings</button>
-          <button class="button tab" onclick="openTab('about')">About</button>
-        </ul>
+        <div class="flex-colum flex tab-selectors" style="border: none; opacity: 1; position: relative; bottom: -12px;">
+          <button class="button tab active" onclick="openTab('general')"><img src="./assets/icons/home.svg" style="width: 16px; height: 16px; margin-left: -25px; margin-bottom: -3px;"> General</button>
+          <button id="btnBotting" class="button tab" onclick="openTab('botting')"><img src="./assets/icons/user.svg" style="width: 16px; height: 16px; margin-left: -30px; margin-bottom: -3px;"> Botting</button>
+          <button class="button tab" onclick="openTab('scripting')" style="font-size: 12px;"><img src="./assets/icons/code.svg" style="width: 16px; height: 16px; margin-left: -26px; margin-bottom: -3px;"> Scripting</button>
+          <button class="button tab" onclick="openTab('proxyTab')"><img src="./assets/icons/proxy1.svg" style="width: 17px; height: 17px; margin-left: -39px; margin-bottom: -3px;"> Proxy</button>
+          <button class="button tab" onclick="openTab('settings')"><img src="./assets/icons/settings.svg" style="width: 16px; height: 16px; margin-left: -26px; margin-bottom: -3px;"> Settings</button>
+          <button class="button tab" onclick="openTab('about')"><img src="./assets/icons/info.svg" style="width: 16px; height: 16px; margin-left: -41px; margin-bottom: -3px;"> About</button>
+        </div>
       </div>
       <div class="contentArea">
         <div id="general" class="tab-pane m-4 mu-4" style="display: block;">
@@ -345,8 +345,22 @@
                           <input id="circlePlayer" class="input" placeholder="Spin player">
                         </div>
                       </div>
-                      <span style="position: relative; top: 8px;">Radius(1-10) </span>
-                      <input id="circleRadius" type="range" min="1" max="10" value="1" class="slider" style="position: relative; width: 85px; top: 11px;">
+                      <div class="blockRange">
+                        <span style="position: relative; top: 8px;">Radius(1-10) </span>
+                        <div class="range">
+                          <div class="range__content" style="width: 85px; margin-left: 6pc; margin-top: -6px;">
+                            <div class="range__slider">
+                              <div class="range__slider-line"></div>
+                            </div>
+                            <div class="range__thumb">
+                                <div class="range__value">
+                                  <span class="range__value-number">1</span>
+                                </div>
+                            </div>
+                            <input type="range" class="range__input" id="circleRadius" min="0" max="10" value="1">
+                          </div>
+                        </div>
+                      </div>
                       <div class="flex">
                         <div class="input-group mu-4">
                           <button id="startCircle" class="button">Start</button>
@@ -413,7 +427,7 @@
                   </span>
                 </div>
                 <div class="flex">
-                  <div class="border">
+                  <div class="border" style="width: 189px;">
                     <span class="label">
                       <label class="label-text" id="botCaptcha">Bot: </label>
                     </span>
@@ -445,8 +459,22 @@
                       </label>
                     </div>
                     <hr>
-                    <span>Range(1-5)</span>
-                    <input id="kaRange" type="range" min="1" max="5" value="1" class="slider" style="width: 100px;">
+                    <div class="blockRange">
+                      <span>Range(1-5)</span>
+                      <div class="range">
+                        <div class="range__content" style="width: 99px; margin-left: 90px; margin-top: -14px;">
+                          <div class="range__slider">
+                            <div class="range__slider-line"></div>
+                          </div>
+                          <div class="range__thumb">
+                              <div class="range__value">
+                                <span class="range__value-number">1</span>
+                              </div>
+                          </div>
+                          <input type="range" class="range__input" id="circleRadius" min="0" max="5" value="1">
+                        </div>
+                      </div>
+                    </div>
                     <div class="flex" style="margin-top: 10px; position: relative; left: -35px;">
                       <label class="container">
                         <label>Delay</label>
@@ -454,28 +482,28 @@
                       <input id="kaDelay" type="number" min="0" class="input-sm m-1" placeholder="(500ms)">
                     </div>
                     <div class="flex">
-                      <label class="container" style="margin-top: 7px;">
+                      <label class="container" style="margin-top: 7px; font-size: 20px;">
                         <label>Look at target</label>
                         <input id="toggleKaLook" type="checkbox">
                         <span class="checkmark"></span>
                       </label>
                     </div>
                     <div class="flex">
-                      <label class="container" style="margin-top: 3px;">
+                      <label class="container" style="margin-top: 5px; font-size: 19px;">
                         <label>Ignore selected</label>
                         <input id="checkKaIgnoreSelected" type="checkbox">
                         <span class="checkmark"></span>
                       </label>
                     </div>
                     <div class="flex">
-                      <label class="container" style="margin-top: 3px;">
+                      <label class="container" style="margin-top: 6px;">
                         <label>Auto jump</label>
                         <input id="autojump" type="checkbox">
                         <span class="checkmark"></span>
                       </label>
                     </div>
                     <div class="input-group flex-colum center-elements">
-                      <span class="label" style="position: fixed; top: 280px;">
+                      <span class="label" style="position: fixed; top: 270px;">
                         <label class="label-text">Targets</label>
                       </span>
                     </div>
@@ -500,10 +528,12 @@
                         <input id="kaTa" type="checkbox">
                         <span class="checkmark"></span>
                       </label>
-                      <label style="margin-top: 3px;">
-                        <label>Friends</label>
-                        <input id="friends" class="input-sm m-1" placeholder="Friends">
-                      </label>
+                      <div class="flex">
+                        <label style="margin-top: 5px;">
+                          <label>Friends</label>
+                          <input id="friends" class="input-sm m-1" placeholder="Friends">
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -590,6 +620,7 @@
                     <select id="proxyCheckProtocol" class="select-input">
                       <option value="4">SOCKS4</option>
                       <option value="5">SOCKS5</option>
+                      <option value="http">HTTP</option>
                     </select>
                   </div>
                   <button class="button m-1" id="checkProxyfile">Check file</button>
@@ -602,6 +633,7 @@
                     <select id="proxyScrapeProtocol" class="select-input">
                       <option value="4">SOCKS4</option>
                       <option value="5">SOCKS5</option>
+                      <option value="http">HTTP</option>
                     </select>
                   </div>
                   <button id="proxyScrapeStart" class="button m-1">Scrape proxy</button>
@@ -621,6 +653,7 @@
                   <select id="proxyType" class="select-input m-1">
                     <option value="4">SOCKS4</option>
                     <option value="5">SOCKS5</option>
+                    <option value="http">HTTP</option>
                   </select>
                 </div>
               </div>
@@ -642,8 +675,8 @@
                   <label>Linear</label>
                 </label>
                 <input id="linearValue" type="number" min="0" class="input-sm m-1" placeholder="delay (0ms)">
-                <img src="./assets/icons/info.svg" class="icon-sm hpop" data-popup="popupLinear">
-                <div class="popup" id="popupLinear">
+                <img src="./assets/icons/info.svg" class="icon-sm hpop" data-popup="notifyLinear">
+                <div class="notify" id="notifyLinear">
                   <span>Delay between each bots</span>
                 </div>
               </div>
@@ -658,6 +691,11 @@
               <label class="container" style="margin-top: 3px;">
                 <label>Sprint</label>
                 <input id="checkboxSprint" type="checkbox">
+                <span class="checkmark"></span>
+              </label>
+              <label class="container" style="margin-top: 3px;">
+                <label>MineBerry bypass</label>
+                <input id="mineBerryBypass" type="checkbox">
                 <span class="checkmark"></span>
               </label>
               <div class="flex">
@@ -724,16 +762,65 @@
           <label id="proxyInfoDownbarCount" class="m-1">0/0</label>
         </span>
       </div>
+
+      <!-- <div class="mini-chat" id="miniChat">
+        <div class="mini-chat-header" id="chatHeader">Mini Chat</div>
+        <div class="mini-chat-content" id="chatContent">
+          <ul id="miniChatBox" style="height: 15pc; width:200px; user-select: text;"></ul>
+        </div>
+      </div> -->
+
       <script defer src="./js/bot.js"></script>
       <script defer src="./js/htmlControl.js"></script>
+      <img class="bgimg">
+      <ul id="listul" style="pointer-events: none; position: fixed; bottom: 10px; right: 10px; border: none; opacity: 1; background: transparent; margin: 5px;" dir="rtl"></ul>
     </div>
-    <img class="bgimg">
-    <ul id="listul" style="pointer-events: none; position: fixed; bottom: 10px; right: 10px; border: none; opacity: 1; background: transparent; " dir="rtl"></ul>
     <script>
       setTimeout(() => {
         document.getElementById('loadingText').style.display = 'none';
         document.querySelector('.trafficer').style.display = 'block';
       }, 3000);
+    </script>
+    <script>
+      const rangeThumbs = document.querySelectorAll('.range__thumb');
+      const rangeNumbers = document.querySelectorAll('.range__value-number');
+      const rangeLines = document.querySelectorAll('.range__slider-line');
+      const rangeInputs = document.querySelectorAll('.range__input');
+      const rangeValue = document.querySelectorAll('.range__value');
+
+      const rangeInputSlider = (index) => {
+          const updateThumb = () => {
+              const thumbPosition = (rangeInputs[index].value / rangeInputs[index].max);
+              const space = rangeInputs[index].offsetWidth - rangeThumbs[index].offsetWidth;
+
+              rangeThumbs[index].style.left = (thumbPosition * space) + 'px';
+              rangeLines[index].style.width = (thumbPosition * space + 5) + 'px';
+          };
+
+          rangeNumbers[index].textContent = rangeInputs[index].value;
+          rangeNumbers[index].style.display = 'none';
+          rangeValue[index].style.display = 'none';
+          updateThumb();
+          
+          rangeInputs[index].addEventListener('input', () => {
+              rangeNumbers[index].textContent = rangeInputs[index].value;
+              rangeNumbers[index].style.display = 'block';
+              rangeValue[index].style.display = 'grid';
+              updateThumb();
+          });
+          rangeInputs[index].addEventListener('mouseout', () => {
+              rangeValue[index].style.display = 'none';
+              rangeNumbers[index].style.display = 'none';
+          });
+          rangeInputs[index].addEventListener('keyup', () => {
+              rangeValue[index].style.display = 'none';
+              rangeNumbers[index].style.display = 'none';
+          });
+      };
+
+      for (let i = 0; i < rangeInputs.length; i++) {
+          rangeInputSlider(i);
+      }
     </script>
   </body>
 </html>
