@@ -374,7 +374,7 @@ ul li {
 }
 .trafficer {
     opacity: 0;
-    animation: fadeIn 0s 0s forwards;
+    animation: fadeIn 3s 3s forwards;
 }
 @keyframes fadeIn {
     from {
